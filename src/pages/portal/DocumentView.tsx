@@ -4,6 +4,9 @@ import { useDocument, signDocument, updateDocumentStatus } from '../../hooks/use
 import { useAuth } from '../../hooks/useAuth'
 import { Button, MicroLabel } from '../../components/ui'
 import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
+import { QuoteDocument } from '../../components/documents/Quote/QuoteDocument'
+import { ProposalDocument } from '../../components/documents/Proposal/ProposalDocument'
+import { ContractDocument } from '../../components/documents/Contract/ContractDocument'
 import { ReportDocument } from '../../components/documents/Report/ReportDocument'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type Client } from '../../types'
 import { exportToPDF } from '../../lib/pdf'
@@ -76,13 +79,12 @@ export default function DocumentView() {
       </div>
 
       {/* Document */}
-      {document.type === 'invoice' && client && (
-        <InvoiceDocument document={document} client={client} readonly />
-      )}
-      {document.type === 'report' && client && (
-        <ReportDocument document={document} client={client} readonly />
-      )}
-      {!['invoice', 'report'].includes(document.type) && (
+      {document.type === 'invoice' && client && <InvoiceDocument document={document} client={client} readonly />}
+      {document.type === 'quote' && client && <QuoteDocument document={document} client={client} readonly />}
+      {document.type === 'proposal' && client && <ProposalDocument document={document} client={client} readonly />}
+      {document.type === 'contract' && client && <ContractDocument document={document} client={client} readonly />}
+      {document.type === 'report' && client && <ReportDocument document={document} client={client} readonly />}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <p className="font-body text-[13px] text-ks-slate">This document type doesn't have a visual template yet.</p>
         </div>

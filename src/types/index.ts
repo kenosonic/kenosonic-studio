@@ -47,7 +47,7 @@ export interface KSDocument {
   type: DocumentType
   title: string
   status: DocumentStatus
-  content: InvoiceContent | ReportContent | ProposalContent | AuditContent | EmailContent | Record<string, unknown>
+  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | Record<string, unknown>
   reference_number: string
   sent_at?: string
   viewed_at?: string
@@ -89,6 +89,26 @@ export interface InvoiceContent {
   line_items: LineItem[]
   tax_rate: number
   notes: string
+}
+
+export interface QuoteContent {
+  issue_date: string
+  valid_until: string
+  payment_terms: string
+  bank_details: { bank: string; account: string; branch: string }
+  line_items: LineItem[]
+  tax_rate: number
+  notes: string
+}
+
+export interface ContractContent {
+  intro: string
+  sections: Array<{ id: string; heading: string; body: string }>
+  deliverables: string[]
+  timeline: Array<{ id: string; milestone: string; date: string }>
+  payment_terms: string
+  total_value: number
+  terms: string
 }
 
 export interface ReportSection {
