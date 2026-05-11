@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { Client, ProposalContent, ProposalLineItem, ProposalTimeline, KSDocument } from '../../../types'
+import type { Client, ProposalContent, ProposalLineItem, ProposalTimeline, KSDocument, ServiceType } from '../../../types'
+import { SERVICE_LABELS } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
@@ -9,6 +10,18 @@ interface Props {
   document: KSDocument
   client: Client
   readonly?: boolean
+}
+
+const SCOPE_LABELS: Partial<Record<ServiceType, [string, string, string]>> = {
+  web:               ['Design & Development',      'Technical Setup',              'Training & Support'],
+  custom_dev:        ['Architecture & Planning',   'Development & Testing',        'Deployment & Support'],
+  digital_marketing: ['Strategy & Planning',       'Campaign Execution',           'Reporting & Support'],
+  seo:               ['Technical SEO',             'On-Page & Content',            'Reporting & Off-Page'],
+  brand:             ['Brand Strategy',            'Visual Identity',              'Delivery & Support'],
+  google_ads:        ['Account & Campaign Setup',  'Ad Creation & Optimisation',   'Reporting & Insights'],
+  social_media:      ['Strategy & Creative',       'Campaign Execution',           'Reporting & Optimisation'],
+  copywriting:       ['Strategy & Research',       'Writing & Editing',            'Delivery & Revisions'],
+  bpa:               ['Process Mapping',           'Automation Build',             'Testing & Handover'],
 }
 
 const fmt = (n: number) =>
@@ -86,18 +99,22 @@ function CE({
   style?: React.CSSProperties
   block?: boolean
 }) {
-  const Tag = block ? 'p' : 'span'
+  if (block) {
+    return (
+      <p contentEditable suppressContentEditableWarning
+        onBlur={e => onSave(e.currentTarget.innerText)} style={style}
+      >{value}</p>
+    )
+  }
   return (
-    <Tag
-      contentEditable suppressContentEditableWarning
-      onBlur={e => onSave(e.currentTarget.innerText)}
-      style={style}
-    >{value}</Tag>
+    <span contentEditable suppressContentEditableWarning
+      onBlur={e => onSave(e.currentTarget.innerText)} style={style}
+    >{value}</span>
   )
 }
 
 export function ProposalDocument({ document, client, readonly = false }: Props) {
-  const raw = document.content as ProposalContent
+  const raw = (document.content ?? {}) as ProposalContent
 
   const defaultTimeline: ProposalTimeline[] = [
     { id: crypto.randomUUID(), phase: 'Discovery & Planning', duration: '3 days', deliverable: 'Wireframes / sitemap approved' },
@@ -112,11 +129,14 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
     { id: crypto.randomUUID(), title: 'Training & Documentation', amount: 500 },
   ]
 
+  const arr = <T,>(v: unknown, fallback: T[]): T[] => Array.isArray(v) ? v as T[] : fallback
+
   const [content, setContent] = useState<ProposalContent>({
+    service_type: raw.service_type,
     valid_until: raw.valid_until ?? '',
     primary_goal: raw.primary_goal ?? 'establish an online presence',
     page_count: raw.page_count ?? 5,
-    included_design: raw.included_design ?? [
+    included_design: arr(raw.included_design, [
       'Custom website design tailored to your brand',
       'Up to 5 pages (Home, About, Services, Portfolio, Contact)',
       'Mobile-responsive design (looks great on all devices)',
@@ -124,17 +144,17 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
       'Basic SEO optimisation (meta titles, descriptions, alt tags)',
       'Integration with your social media profiles',
       'Google Analytics setup for tracking visitors',
-    ],
-    included_technical: raw.included_technical ?? [
+    ]),
+    included_technical: arr(raw.included_technical, [
       'SSL certificate installation (secure https://)',
       'Website speed optimisation',
       'Cross-browser compatibility testing',
-    ],
-    included_training: raw.included_training ?? [
+    ]),
+    included_training: arr(raw.included_training, [
       'Video tutorial showing how to update content yourself',
       '30 days of technical support after launch (bug fixes only)',
-    ],
-    excluded_items: raw.excluded_items ?? [
+    ]),
+    excluded_items: arr(raw.excluded_items, [
       'Logo design or branding materials',
       'Copywriting (writing website text)',
       'Photography or custom graphics',
@@ -142,43 +162,43 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
       'Ongoing SEO or marketing services',
       'Email marketing setup',
       'Social media management',
-    ],
+    ]),
     revision_rounds: raw.revision_rounds ?? 2,
     revision_rate: raw.revision_rate ?? 500,
-    client_responsibilities: raw.client_responsibilities ?? [
+    client_responsibilities: arr(raw.client_responsibilities, [
       'All website content (text, images, logos) within 5 business days of project start',
       'Timely feedback on designs (within 3 business days of each review request)',
       'Access to domain registrar and hosting accounts (if applicable)',
       'One primary point of contact for approvals',
-    ],
-    timeline: raw.timeline ?? defaultTimeline,
+    ]),
+    timeline: arr(raw.timeline, defaultTimeline),
     total_timeline: raw.total_timeline ?? 'Approximately 4 weeks from content delivery to launch',
-    line_items: raw.line_items ?? defaultLineItems,
+    line_items: arr(raw.line_items, defaultLineItems),
     founders_mode: raw.founders_mode ?? false,
-    founders_exchange: raw.founders_exchange ?? [
+    founders_exchange: arr(raw.founders_exchange, [
       'A detailed testimonial upon project completion',
       'Permission to showcase this website in our portfolio',
       'Referrals to anyone you know who needs web services',
-    ],
-    client_costs: raw.client_costs ?? [
+    ]),
+    client_costs: arr(raw.client_costs, [
       { id: crypto.randomUUID(), title: 'Domain name registration', cost: '~R150–300/year' },
       { id: crypto.randomUUID(), title: 'Web hosting', cost: '~R50–150/month' },
-    ],
+    ]),
     deposit_percent: raw.deposit_percent ?? 50,
-    terms: raw.terms ?? [
+    terms: arr(raw.terms, [
       { id: crypto.randomUUID(), heading: 'Ownership', body: 'Upon completion, you own all rights to the website design and code. Kenosonic Interactive retains the right to display the work in our portfolio.' },
       { id: crypto.randomUUID(), heading: 'Revisions', body: 'Minor text/image updates during development are included. Major design changes requested after approval stages may incur additional fees.' },
       { id: crypto.randomUUID(), heading: 'Timeline Delays', body: 'If content delivery or feedback is delayed by more than 7 days, the project timeline will be extended accordingly.' },
       { id: crypto.randomUUID(), heading: 'Cancellation', body: 'Either party may cancel with 7 days written notice. Work completed to that point remains your property.' },
       { id: crypto.randomUUID(), heading: 'Hosting & Maintenance', body: 'After launch, you are responsible for hosting fees, domain renewal, and ongoing maintenance. Monthly maintenance packages are available from R500/month.' },
       { id: crypto.randomUUID(), heading: 'Scope Changes', body: 'Any requests outside the defined scope will require a separate proposal and pricing.' },
-    ],
-    next_steps: raw.next_steps ?? [
+    ]),
+    next_steps: arr(raw.next_steps, [
       'Review this proposal and reach out with any questions',
       'Reply with "I accept the proposal as outlined" or sign below',
       'Complete the onboarding questionnaire we\'ll send through',
       'Provide all content assets within 5 business days',
-    ],
+    ]),
     validity_days: raw.validity_days ?? 14,
   })
   const [saving, setSaving] = useState(false)
@@ -194,6 +214,8 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
     const t = setTimeout(save, 2000)
     return () => clearTimeout(t)
   }, [content]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const scopeLabels = (content.service_type && SCOPE_LABELS[content.service_type]) ?? ['Deliverable 1', 'Deliverable 2', 'Support & Training']
 
   const subtotal = content.line_items.reduce((s, i) => s + i.amount, 0)
   const foundersDiscount = content.founders_mode ? subtotal : 0
@@ -234,6 +256,11 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         {/* Proposal meta */}
         <div style={{ display: 'flex', gap: '40px', marginBottom: '32px', paddingBottom: '32px', borderBottom: '0.5px solid #E8E5E0' }}>
           <div style={{ flex: 1 }}>
+            {content.service_type && (
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#F56E0F', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>
+                {SERVICE_LABELS[content.service_type]}
+              </p>
+            )}
             <p style={{ ...micro, marginBottom: '6px' }}>Prepared for</p>
             <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0D0D0D' }}>{client.company_name}</p>
             <p style={{ fontSize: '12px', color: '#9A9A9A' }}>{client.contact_name} · {client.contact_email}</p>
@@ -282,15 +309,15 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px', marginBottom: '28px' }}>
             <div>
-              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Design & Development</p>
+              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>{scopeLabels[0]}</p>
               <BulletList items={content.included_design} onChange={v => setField('included_design', v)} readonly={readonly} />
             </div>
             <div>
-              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Technical Setup</p>
+              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>{scopeLabels[1]}</p>
               <BulletList items={content.included_technical} onChange={v => setField('included_technical', v)} readonly={readonly} />
             </div>
             <div>
-              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Training & Support</p>
+              <p style={{ fontSize: '10px', color: '#9A9A9A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>{scopeLabels[2]}</p>
               <BulletList items={content.included_training} onChange={v => setField('included_training', v)} readonly={readonly} />
             </div>
           </div>

@@ -139,6 +139,7 @@ export interface ProposalLineItem {
 }
 
 export interface ProposalContent {
+  service_type?: ServiceType
   valid_until: string
   primary_goal: string
   page_count: number
