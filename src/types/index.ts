@@ -125,13 +125,46 @@ export interface ReportContent {
   sections: ReportSection[]
 }
 
+export interface ProposalTimeline {
+  id: string
+  phase: string
+  duration: string
+  deliverable: string
+}
+
+export interface ProposalLineItem {
+  id: string
+  title: string
+  amount: number
+}
+
 export interface ProposalContent {
-  intro: string
-  sections: Array<{ id: string; heading: string; body: string }>
-  deliverables: string[]
-  timeline: Array<{ id: string; milestone: string; date: string }>
-  pricing_summary: number
-  terms: string
+  valid_until: string
+  primary_goal: string
+  page_count: number
+
+  included_design: string[]
+  included_technical: string[]
+  included_training: string[]
+  excluded_items: string[]
+  revision_rounds: number
+  revision_rate: number
+
+  client_responsibilities: string[]
+
+  timeline: ProposalTimeline[]
+  total_timeline: string
+
+  line_items: ProposalLineItem[]
+  founders_mode: boolean
+  founders_exchange: string[]
+  client_costs: Array<{ id: string; title: string; cost: string }>
+
+  deposit_percent: number
+
+  terms: Array<{ id: string; heading: string; body: string }>
+  next_steps: string[]
+  validity_days: number
 }
 
 export interface AuditSection {
