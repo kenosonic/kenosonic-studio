@@ -30,13 +30,16 @@ export function useAuth() {
     setLoading(false)
   }
 
-  async function signIn(email: string, password: string) {
-    return supabase.auth.signInWithPassword({ email, password })
+  async function signInWithGoogle() {
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
   }
 
   async function signOut() {
     return supabase.auth.signOut()
   }
 
-  return { user, profile, loading, signIn, signOut }
+  return { user, profile, loading, signInWithGoogle, signOut }
 }
