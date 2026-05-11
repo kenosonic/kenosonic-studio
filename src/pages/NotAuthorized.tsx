@@ -11,9 +11,7 @@ export default function NotAuthorized() {
         <div className="bg-white border border-ks-rule w-full max-w-md overflow-hidden">
 
           <div style={{ backgroundColor: '#0D0D0D', borderBottom: '3px solid #F56E0F', padding: '28px 36px' }}>
-            <h1 className="font-display font-bold text-[18px] tracking-[-0.02em] text-white">
-              KENO <span style={{ color: '#F56E0F' }}>SONIC</span>
-            </h1>
+            <img src="/logo.svg" alt="Kenosonic" style={{ height: '24px', filter: 'brightness(0) invert(1)' }} />
             <p className="font-body font-medium text-[9px] uppercase tracking-[0.15em] mt-1" style={{ color: '#5A5A5A' }}>
               Studio OS — Client Access
             </p>
@@ -36,8 +34,9 @@ export default function NotAuthorized() {
           </div>
 
           <div style={{ backgroundColor: '#0D0D0D', borderTop: '0.5px solid #1E1E1E', padding: '16px 36px' }}>
-            <p className="font-body text-[9px] uppercase tracking-[0.05em]" style={{ color: '#3A3A3A' }}>
-              PRECISION // STRATEGY // DESIGN
+            <p className="font-body text-[9px]" style={{ color: '#3A3A3A', lineHeight: 1.7 }}>
+              B-BBEE Level 1 · 100% Black-Owned<br />
+              <a href="mailto:hello@kenosonic.co.za" style={{ color: '#F56E0F', textDecoration: 'none' }}>hello@kenosonic.co.za</a>
             </p>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Login() {
-  const { profile, loading, signInWithGoogle, signInWithEmail } = useAuth()
+  const { user, profile, loading, signInWithGoogle, signInWithEmail } = useAuth()
   const [signingIn, setSigningIn] = useState(false)
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
@@ -11,10 +11,13 @@ export default function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!loading && profile) {
+    if (loading) return
+    if (profile) {
       navigate(profile.role === 'admin' ? '/admin' : '/portal', { replace: true })
+    } else if (user) {
+      navigate('/not-authorized', { replace: true })
     }
-  }, [profile, loading, navigate])
+  }, [profile, loading, user, navigate])
 
   async function handleGoogle() {
     setError('')
@@ -57,9 +60,7 @@ export default function Login() {
         <div className="relative z-10 max-w-sm">
           {/* Brand */}
           <div className="mb-12">
-            <h1 className="font-display font-bold text-[22px] tracking-[-0.02em] text-ks-ink mb-1">
-              KENO <span className="text-ks-lava">SONIC</span>
-            </h1>
+            <img src="/logo.svg" alt="Kenosonic" style={{ height: '28px', marginBottom: '8px', filter: 'brightness(0)' }} />
             <p className="font-body font-medium text-[9px] uppercase tracking-[0.15em] text-ks-silver">
               Studio OS
             </p>
@@ -146,8 +147,9 @@ export default function Login() {
           <p className="font-display font-bold text-[18px] text-white leading-snug mb-6">
             Proposals, invoices &<br />client documents —<br />all in one place.
           </p>
-          <p style={{ color: '#F56E0F', fontWeight: 700, fontSize: '9px', fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            PRECISION // STRATEGY // DESIGN
+          <p style={{ fontSize: '9px', fontFamily: 'Inter, sans-serif', color: '#3A3A3A', lineHeight: 1.7 }}>
+            B-BBEE Level 1 · 100% Black-Owned<br />
+            <a href="mailto:hello@kenosonic.co.za" style={{ color: '#F56E0F', textDecoration: 'none' }}>hello@kenosonic.co.za</a>
           </p>
         </div>
       </div>

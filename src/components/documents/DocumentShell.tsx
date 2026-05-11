@@ -29,19 +29,11 @@ export function DocumentShell({ document, client, children, id = 'document-conte
         }}
       >
         <div>
-          <h1
-            style={{
-              fontFamily: 'Space Grotesk, sans-serif',
-              fontSize: '18px',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              color: '#FFFFFF',
-              lineHeight: 1,
-              marginBottom: '16px',
-            }}
-          >
-            KENO <span style={{ color: '#F56E0F' }}>SONIC</span>
-          </h1>
+          <img
+            src="/logo.svg"
+            alt="Kenosonic"
+            style={{ height: '32px', marginBottom: '16px', filter: 'brightness(0) invert(1)' }}
+          />
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', color: '#9A9A9A', lineHeight: 1.5, fontWeight: 500 }}>
             Kenosonic Interactive (Pty) Ltd<br />
             Reg. No. 2026/021166/07<br />
@@ -101,14 +93,13 @@ export function DocumentShell({ document, client, children, id = 'document-conte
           alignItems: 'center',
         }}
       >
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#9A9A9A', lineHeight: 1.8 }}>
-          KENO SONIC STUDIO // STRATEGY DIVISION<br />
-          SOUTH AFRICA — GLOBAL OPERATIONS<br />
-          hello@kenosonic.co.za
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', color: '#9A9A9A', lineHeight: 1.7 }}>
+          Thank you for choosing Kenosonic Interactive.<br />
+          For questions, contact us at <a href="mailto:hello@kenosonic.co.za" style={{ color: '#F56E0F', textDecoration: 'none' }}>hello@kenosonic.co.za</a>
         </p>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', textAlign: 'right', letterSpacing: '0.05em' }}>
-          <span style={{ color: '#F56E0F', fontWeight: 700 }}>PRECISION // STRATEGY // DESIGN</span><br />
-          CONFIDENTIAL © {new Date().getFullYear()}
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', textAlign: 'right', lineHeight: 1.7 }}>
+          B-BBEE Level 1 · 100% Black-Owned<br />
+          Confidential © {new Date().getFullYear()}
         </p>
       </footer>
     </div>
