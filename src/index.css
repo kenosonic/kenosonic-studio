@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #3A3A3A;
+    background-color: #F0EDE8;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    color: #0D0D0D;
+  }
+
+  [contenteditable="true"] {
+    outline: none;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s, background-color 0.15s;
+    min-width: 20px;
+    display: inline-block;
+  }
+
+  [contenteditable="true"]:hover,
+  [contenteditable="true"]:focus {
+    background-color: rgba(245, 110, 15, 0.05);
+    border-bottom: 1px dashed #F56E0F;
+    cursor: text;
+  }
+}
+
+@layer utilities {
+  .border-hairline { border-width: 0.5px; }
+  .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+  .font-body { font-family: 'Inter', system-ui, sans-serif; }
+}
+
+@media print {
+  body { background: white !important; padding: 0 !important; }
+  .no-print { display: none !important; }
+  [contenteditable="true"] { border-bottom: none !important; background: transparent !important; }
+}

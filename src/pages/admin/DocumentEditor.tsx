@@ -1,0 +1,82 @@
+import { Link, useParams } from 'react-router-dom'
+import { useDocument, updateDocumentStatus } from '../../hooks/useDocument'
+import { MicroLabel, Button } from '../../components/ui'
+import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
+import { ReportDocument } from '../../components/documents/Report/ReportDocument'
+import { STATUS_COLORS, type DocumentStatus, type Client } from '../../types'
+import { useState } from 'react'
+
+const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
+  draft: 'sent',
+  sent: 'approved',
+  viewed: 'approved',
+  approved: 'signed',
+}
+
+export default function DocumentEditor() {
+  const { id } = useParams<{ id: string }>()
+  const { document, loading, setDocument } = useDocument(id)
+  const [updating, setUpdating] = useState(false)
+
+  async function handleStatusUpdate() {
+    if (!document) return
+    const next = NEXT_STATUS[document.status]
+    if (!next) return
+    setUpdating(true)
+    await updateDocumentStatus(document.id, next)
+    setDocument(d => d ? { ...d, status: next } : d)
+    setUpdating(false)
+  }
+
+  if (loading) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
+  if (!document) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Document not found.</div>
+
+  const client = document.client as Client
+
+  return (
+    <div className="px-10 py-10">
+      {/* Breadcrumb + meta */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            {client && (
+              <>
+                <Link to={`/admin/clients/${client.id}`} className="font-body text-[11px] text-ks-silver hover:text-ks-lava">{client.company_name}</Link>
+                <span className="text-ks-silver text-[11px]">/</span>
+              </>
+            )}
+            <span className="font-body text-[11px] text-ks-ink">{document.reference_number}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <MicroLabel>{document.type}</MicroLabel>
+            <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[document.status]}`}>
+              {document.status}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          {NEXT_STATUS[document.status] && (
+            <Button variant="orange" size="sm" onClick={handleStatusUpdate} disabled={updating}>
+              {updating ? 'Updating…' : `Mark as ${NEXT_STATUS[document.status]}`}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Document renderer */}
+      {document.type === 'invoice' && client && (
+        <InvoiceDocument document={document} client={client} />
+      )}
+      {document.type === 'report' && client && (
+        <ReportDocument document={document} client={client} />
+      )}
+      {!['invoice', 'report'].includes(document.type) && (
+        <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
+          <MicroLabel className="block mb-3">Template Coming Soon</MicroLabel>
+          <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is in Phase 2.</p>
+        </div>
+      )}
+    </div>
+  )
+}
