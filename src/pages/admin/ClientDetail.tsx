@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useClient } from '../../hooks/useClient'
 import { useDocuments, createDocument } from '../../hooks/useDocument'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
 import { Button, MicroLabel } from '../../components/ui'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType } from '../../types'
 
@@ -16,6 +17,29 @@ export default function ClientDetail() {
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const [showDocMenu, setShowDocMenu] = useState(false)
+  const [inviteUrl, setInviteUrl] = useState('')
+  const [generatingInvite, setGeneratingInvite] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
+
+  async function handleGenerateInvite() {
+    if (!client) return
+    setGeneratingInvite(true)
+    setInviteUrl('')
+    const { data, error } = await supabase
+      .from('invites')
+      .insert({ client_id: client.id })
+      .select('token')
+      .single()
+    setGeneratingInvite(false)
+    if (error || !data) return
+    setInviteUrl(`${window.location.origin}/invite/${data.token}`)
+  }
+
+  async function handleCopyInvite() {
+    await navigator.clipboard.writeText(inviteUrl)
+    setInviteCopied(true)
+    setTimeout(() => setInviteCopied(false), 2000)
+  }
 
   async function handleCreateDoc(type: DocumentType) {
     if (!client || !user) return
@@ -79,30 +103,48 @@ export default function ClientDetail() {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <MicroLabel>{client.industry}</MicroLabel>
           <h2 className="font-display font-bold text-[26px] tracking-[-0.02em] text-ks-ink mt-1">{client.company_name}</h2>
         </div>
-        <div className="relative">
-          <Button variant="dark" onClick={() => setShowDocMenu(v => !v)} disabled={creating}>
-            {creating ? 'Creating…' : '+ New Document'}
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={handleGenerateInvite} disabled={generatingInvite}>
+            {generatingInvite ? 'Generating…' : 'Generate Invite Link'}
           </Button>
-          {showDocMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-ks-hairline shadow-sm z-10 w-52 rounded-ks overflow-hidden">
-              {DOC_TYPES.map(type => (
-                <button
-                  key={type}
-                  onClick={() => handleCreateDoc(type)}
-                  className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0"
-                >
-                  {DOC_TYPE_LABELS[type]}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="relative">
+            <Button variant="dark" onClick={() => setShowDocMenu(v => !v)} disabled={creating}>
+              {creating ? 'Creating…' : '+ New Document'}
+            </Button>
+            {showDocMenu && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-ks-hairline shadow-sm z-10 w-52 rounded-ks overflow-hidden">
+                {DOC_TYPES.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => handleCreateDoc(type)}
+                    className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0"
+                  >
+                    {DOC_TYPE_LABELS[type]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Invite URL banner */}
+      {inviteUrl && (
+        <div className="flex items-center gap-3 bg-white border border-ks-rule px-5 py-3 mb-6">
+          <p className="font-body text-[11px] text-ks-silver flex-1 truncate">{inviteUrl}</p>
+          <button
+            onClick={handleCopyInvite}
+            className="font-body font-medium text-[10px] uppercase tracking-[0.1em] text-ks-lava hover:opacity-70 transition-opacity flex-shrink-0"
+          >
+            {inviteCopied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      )}
 
       {/* Client info stat bar */}
       <div className="flex border border-ks-rule mb-8" style={{ backgroundColor: '#E8E5E0' }}>

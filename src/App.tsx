@@ -4,6 +4,8 @@ import { AdminShell } from './components/layout/AdminShell'
 import { PortalShell } from './components/layout/PortalShell'
 
 import Login from './pages/Login'
+import Invite from './pages/Invite'
+import NotAuthorized from './pages/NotAuthorized'
 import Dashboard from './pages/admin/Dashboard'
 import Clients from './pages/admin/Clients'
 import ClientDetail from './pages/admin/ClientDetail'
@@ -18,6 +20,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/invite/:token" element={<Invite />} />
+        <Route path="/not-authorized" element={<NotAuthorized />} />
 
         {/* Admin routes */}
         <Route
