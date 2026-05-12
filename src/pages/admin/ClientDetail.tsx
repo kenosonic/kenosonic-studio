@@ -521,7 +521,7 @@ export default function ClientDetail() {
       client.id,
       type,
       `${DOC_TYPE_LABELS[type]} — ${client.company_name}`,
-      defaultContent[type],
+      defaultContent[type as keyof typeof defaultContent],
       user.id,
     )
     setCreating(false)
