@@ -1,6 +1,6 @@
 export type ClientStatus = 'active' | 'inactive'
 export type ProjectStatus = 'prospect' | 'active' | 'completed' | 'paused'
-export type DocumentStatus = 'draft' | 'sent' | 'viewed' | 'approved' | 'signed' | 'rejected'
+export type DocumentStatus = 'draft' | 'sent' | 'viewed' | 'approved' | 'signed' | 'rejected' | 'completed'
 export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding'
 export type ServiceType = 'web' | 'digital_marketing' | 'brand' | 'google_ads' | 'social_media' | 'seo' | 'copywriting' | 'custom_dev' | 'plugins' | 'bpa' | 'other'
 export type UserRole = 'admin' | 'client'
@@ -47,7 +47,7 @@ export interface KSDocument {
   type: DocumentType
   title: string
   status: DocumentStatus
-  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | Record<string, unknown>
+  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | OffboardingContent | Record<string, unknown>
   reference_number: string
   sent_at?: string
   viewed_at?: string
@@ -183,6 +183,21 @@ export interface AuditContent {
   summary: string
 }
 
+export interface OffboardingItem {
+  id: string
+  title: string
+  detail: string
+}
+
+export interface OffboardingContent {
+  project_summary: string
+  delivered_items: OffboardingItem[]
+  credentials: Array<{ id: string; service: string; note: string }>
+  handover_notes: string
+  next_steps: string[]
+  support_terms: string
+}
+
 export interface EmailContent {
   subject: string
   greeting: string
@@ -254,4 +269,5 @@ export const STATUS_COLORS: Record<DocumentStatus, string> = {
   approved: 'bg-green-50 text-green-600',
   signed: 'bg-green-100 text-green-700',
   rejected: 'bg-red-50 text-red-500',
+  completed: 'bg-purple-50 text-purple-600',
 }

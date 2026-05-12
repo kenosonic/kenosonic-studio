@@ -8,6 +8,9 @@ import { QuoteDocument } from '../../components/documents/Quote/QuoteDocument'
 import { ProposalDocument } from '../../components/documents/Proposal/ProposalDocument'
 import { ContractDocument } from '../../components/documents/Contract/ContractDocument'
 import { ReportDocument } from '../../components/documents/Report/ReportDocument'
+import { AuditDocument } from '../../components/documents/Audit/AuditDocument'
+import { EmailDocument } from '../../components/documents/Email/EmailDocument'
+import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type Client } from '../../types'
 import { exportToPDF } from '../../lib/pdf'
 
@@ -84,7 +87,10 @@ export default function DocumentView() {
       {document.type === 'proposal' && client && <ProposalDocument document={document} client={client} readonly />}
       {document.type === 'contract' && client && <ContractDocument document={document} client={client} readonly />}
       {document.type === 'report' && client && <ReportDocument document={document} client={client} readonly />}
-      {!['invoice', 'quote', 'proposal', 'contract', 'report'].includes(document.type) && (
+      {document.type === 'audit' && client && <AuditDocument document={document} client={client} readonly />}
+      {document.type === 'email' && client && <EmailDocument document={document} client={client} readonly />}
+      {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} readonly />}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <p className="font-body text-[13px] text-ks-slate">This document type doesn't have a visual template yet.</p>
         </div>

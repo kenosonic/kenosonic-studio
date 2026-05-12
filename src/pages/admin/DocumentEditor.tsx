@@ -6,6 +6,9 @@ import { QuoteDocument } from '../../components/documents/Quote/QuoteDocument'
 import { ProposalDocument } from '../../components/documents/Proposal/ProposalDocument'
 import { ContractDocument } from '../../components/documents/Contract/ContractDocument'
 import { ReportDocument } from '../../components/documents/Report/ReportDocument'
+import { AuditDocument } from '../../components/documents/Audit/AuditDocument'
+import { EmailDocument } from '../../components/documents/Email/EmailDocument'
+import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { STATUS_COLORS, type DocumentStatus, type Client } from '../../types'
 import { useState } from 'react'
 
@@ -73,10 +76,13 @@ export default function DocumentEditor() {
       {document.type === 'proposal' && client && <ProposalDocument document={document} client={client} />}
       {document.type === 'contract' && client && <ContractDocument document={document} client={client} />}
       {document.type === 'report' && client && <ReportDocument document={document} client={client} />}
-      {!['invoice', 'quote', 'proposal', 'contract', 'report'].includes(document.type) && (
+      {document.type === 'audit' && client && <AuditDocument document={document} client={client} />}
+      {document.type === 'email' && client && <EmailDocument document={document} client={client} />}
+      {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} />}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <MicroLabel className="block mb-3">Template Coming Soon</MicroLabel>
-          <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is in Phase 3.</p>
+          <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is not yet available.</p>
         </div>
       )}
     </div>

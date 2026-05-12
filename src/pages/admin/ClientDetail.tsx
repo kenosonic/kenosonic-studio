@@ -5,7 +5,7 @@ import { useDocuments, createDocument } from '../../hooks/useDocument'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { Button, MicroLabel } from '../../components/ui'
-import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType, type ServiceType, type ProposalContent } from '../../types'
+import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType, type ServiceType, type ProposalContent, type AuditContent } from '../../types'
 
 const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Website Development',      serviceType: 'web' },
@@ -15,6 +15,15 @@ const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Google Ads',               serviceType: 'google_ads' },
   { label: 'Social Media Advertising', serviceType: 'social_media' },
   { label: 'Custom Development',       serviceType: 'custom_dev' },
+]
+
+const AUDIT_SERVICES: { label: string; serviceType: ServiceType }[] = [
+  { label: 'Website Audit',            serviceType: 'web' },
+  { label: 'SEO Audit',                serviceType: 'seo' },
+  { label: 'Digital Marketing Audit',  serviceType: 'digital_marketing' },
+  { label: 'Google Ads Audit',         serviceType: 'google_ads' },
+  { label: 'Social Media Audit',       serviceType: 'social_media' },
+  { label: 'Brand & Content Audit',    serviceType: 'brand' },
 ]
 
 function getProposalContent(serviceType: ServiceType): ProposalContent {
@@ -439,6 +448,7 @@ export default function ClientDetail() {
   const [creating, setCreating] = useState(false)
   const [showDocMenu, setShowDocMenu] = useState(false)
   const [showProposalSub, setShowProposalSub] = useState(false)
+  const [showAuditSub, setShowAuditSub] = useState(false)
   const [inviteUrl, setInviteUrl] = useState('')
   const [generatingInvite, setGeneratingInvite] = useState(false)
   const [inviteCopied, setInviteCopied] = useState(false)
@@ -480,6 +490,23 @@ export default function ClientDetail() {
     navigate(`/admin/documents/${doc.id}`)
   }
 
+  async function handleCreateAudit(serviceType: ServiceType) {
+    if (!client || !user) return
+    setCreating(true)
+    setShowDocMenu(false)
+    setShowAuditSub(false)
+    const content: AuditContent = { service_type: serviceType, tools_used: [], sections: [], summary: '' }
+    const doc = await createDocument(
+      client.id,
+      'audit',
+      `Audit Report — ${client.company_name}`,
+      content as unknown as Record<string, unknown>,
+      user.id,
+    )
+    setCreating(false)
+    navigate(`/admin/documents/${doc.id}`)
+  }
+
   async function handleCreateDoc(type: DocumentType) {
     if (!client || !user) return
     setCreating(true)
@@ -512,9 +539,15 @@ export default function ClientDetail() {
         ],
       },
       contract: { intro: '', sections: [], signature_block: {} },
-      audit: { service_type: 'web', tools_used: [], sections: [], summary: '' },
-      email: { subject: '', greeting: `Hi ${client.contact_name},`, body_sections: [{ id: crypto.randomUUID(), body: '' }], cta: null },
-      offboarding: { sections: [], assets_delivered: [], access_transferred: [], notes: '' },
+      email: { subject: '', greeting: `Hi ${client.contact_name},`, body_sections: [{ id: crypto.randomUUID(), body: '' }], cta: undefined },
+      offboarding: {
+        project_summary: `Thank you for working with Kenosonic Interactive. This document summarises the work delivered for ${client.company_name}.`,
+        delivered_items: [{ id: crypto.randomUUID(), title: 'Project Deliverable', detail: 'See details below.' }],
+        credentials: [],
+        handover_notes: '',
+        next_steps: ['Review all delivered assets', 'Confirm access to all platforms', 'Reach out within 14 days if you notice any issues'],
+        support_terms: 'Post-project support is available on request at our standard hourly rate.',
+      },
     }
 
     const doc = await createDocument(
@@ -580,8 +613,32 @@ export default function ClientDetail() {
                   </button>
                 ))}
 
-                {/* Remaining types */}
-                {(['contract', 'report', 'audit', 'email', 'offboarding'] as DocumentType[]).map(type => (
+                {/* Contract + Report */}
+                {(['contract', 'report'] as DocumentType[]).map(type => (
+                  <button key={type} onClick={() => handleCreateDoc(type)}
+                    className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline">
+                    {DOC_TYPE_LABELS[type]}
+                  </button>
+                ))}
+
+                {/* Audit — expandable */}
+                <button
+                  onClick={() => setShowAuditSub(v => !v)}
+                  className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline flex items-center justify-between"
+                >
+                  <span>Audit Report</span>
+                  <span className="text-ks-silver text-[9px]">{showAuditSub ? '▲' : '▶'}</span>
+                </button>
+                {showAuditSub && AUDIT_SERVICES.map(svc => (
+                  <button key={svc.serviceType} onClick={() => handleCreateAudit(svc.serviceType)}
+                    className="w-full text-left pl-7 pr-4 py-2.5 font-body text-[11px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline flex items-center gap-2">
+                    <span className="text-ks-lava text-[8px] flex-shrink-0">›</span>
+                    {svc.label}
+                  </button>
+                ))}
+
+                {/* Email + Offboarding */}
+                {(['email', 'offboarding'] as DocumentType[]).map(type => (
                   <button key={type} onClick={() => handleCreateDoc(type)}
                     className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0">
                     {DOC_TYPE_LABELS[type]}
