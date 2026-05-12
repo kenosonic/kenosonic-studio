@@ -32,16 +32,16 @@ export default function PortalHome() {
             <Link
               key={doc.id}
               to={`/portal/documents/${doc.id}`}
-              className={`flex items-center justify-between px-6 py-5 hover:bg-ks-smoke transition-colors ${i < documents.length - 1 ? 'border-b border-ks-hairline' : ''}`}
+              className={`flex items-start justify-between px-4 sm:px-6 py-4 sm:py-5 hover:bg-ks-smoke transition-colors gap-3 ${i < documents.length - 1 ? 'border-b border-ks-hairline' : ''}`}
             >
-              <div>
-                <p className="font-display font-bold text-[14px] text-ks-ink">{doc.title}</p>
+              <div className="min-w-0">
+                <p className="font-display font-bold text-[14px] text-ks-ink truncate">{doc.title}</p>
                 <p className="font-body text-[11px] text-ks-silver mt-1">
                   {DOC_TYPE_LABELS[doc.type]} · {doc.reference_number}
                   {doc.sent_at && ` · Sent ${new Date(doc.sent_at).toLocaleDateString('en-ZA')}`}
                 </p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 flex-shrink-0">
                 <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[doc.status]}`}>
                   {doc.status}
                 </span>

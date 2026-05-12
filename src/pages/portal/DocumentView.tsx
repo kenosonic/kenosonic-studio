@@ -55,33 +55,34 @@ export default function DocumentView() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <Link to="/portal" className="font-body text-[11px] text-ks-silver hover:text-ks-lava block mb-2">← Back to Documents</Link>
-          <div className="flex items-center gap-3">
+      <div className="mb-6">
+        <Link to="/portal" className="font-body text-[11px] text-ks-silver hover:text-ks-lava block mb-3">← Back to Documents</Link>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MicroLabel>{DOC_TYPE_LABELS[document.type]}</MicroLabel>
             <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[document.status]}`}>
               {document.status}
             </span>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm" onClick={() => exportToPDF('document-content', document.reference_number)}>
-            Download PDF
-          </Button>
-          {canApprove && (
-            <Button variant="dark" size="sm" onClick={handleApprove}>Approve Document</Button>
-          )}
-          {canSign && document.status !== 'signed' && (
-            <Button variant="orange" size="sm" onClick={() => setShowSignModal(true)}>Sign Document</Button>
-          )}
-          {signed || document.status === 'signed' ? (
-            <span className="font-body font-medium text-[10px] uppercase tracking-[0.1em] text-green-600 flex items-center gap-1">✓ Signed</span>
-          ) : null}
+          <div className="flex flex-wrap gap-2 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={() => exportToPDF('document-content', document.reference_number)}>
+              PDF
+            </Button>
+            {canApprove && (
+              <Button variant="dark" size="sm" onClick={handleApprove}>Approve</Button>
+            )}
+            {canSign && document.status !== 'signed' && (
+              <Button variant="orange" size="sm" onClick={() => setShowSignModal(true)}>Sign</Button>
+            )}
+            {(signed || document.status === 'signed') && (
+              <span className="font-body font-medium text-[10px] uppercase tracking-[0.1em] text-green-600 flex items-center gap-1">✓ Signed</span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Document */}
+      {/* Document — scroll horizontally on small screens */}
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
       {document.type === 'invoice' && client && <InvoiceDocument document={document} client={client} readonly />}
       {document.type === 'quote' && client && <QuoteDocument document={document} client={client} readonly />}
       {document.type === 'proposal' && client && <ProposalDocument document={document} client={client} readonly />}
@@ -95,6 +96,7 @@ export default function DocumentView() {
           <p className="font-body text-[13px] text-ks-slate">This document type doesn't have a visual template yet.</p>
         </div>
       )}
+      </div>
 
       {/* Sign modal */}
       {showSignModal && (

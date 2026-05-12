@@ -51,7 +51,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left — Ash with dot matrix */}
-      <div className="flex-1 flex flex-col justify-center px-16 py-12 relative overflow-hidden" style={{ backgroundColor: '#F0EDE8' }}>
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 relative overflow-hidden" style={{ backgroundColor: '#F0EDE8' }}>
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle, #9A9A9A 1px, transparent 1px)', backgroundSize: '20px 20px', opacity: 0.18 }}
@@ -134,9 +134,9 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right — Void */}
+      {/* Right — Void (hidden on mobile) */}
       <div
-        className="w-[420px] flex-shrink-0 flex flex-col justify-end p-12 relative overflow-hidden"
+        className="hidden lg:flex w-[420px] flex-shrink-0 flex-col justify-end p-12 relative overflow-hidden"
         style={{ backgroundColor: '#0D0D0D', borderLeft: '3px solid #F56E0F' }}
       >
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #1A1A1A 0.5px, transparent 0.5px), linear-gradient(to bottom, #1A1A1A 0.5px, transparent 0.5px)', backgroundSize: '40px 40px' }} />

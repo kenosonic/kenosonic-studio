@@ -561,27 +561,27 @@ export default function ClientDetail() {
     navigate(`/admin/documents/${doc.id}`)
   }
 
-  if (loading) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
-  if (!client) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Client not found.</div>
+  if (loading) return <div className="px-4 sm:px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
+  if (!client) return <div className="px-4 sm:px-10 py-10 text-ks-silver font-body text-[12px]">Client not found.</div>
 
   return (
-    <div className="px-10 py-10">
+    <div className="px-4 sm:px-10 py-6 sm:py-10">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6">
         <Link to="/admin/clients" className="font-body text-[11px] text-ks-silver hover:text-ks-lava">Clients</Link>
         <span className="text-ks-silver text-[11px]">/</span>
-        <span className="font-body text-[11px] text-ks-ink">{client.company_name}</span>
+        <span className="font-body text-[11px] text-ks-ink truncate">{client.company_name}</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
+      <div className="flex items-start justify-between mb-4 gap-3">
+        <div className="min-w-0">
           <MicroLabel>{client.industry}</MicroLabel>
-          <h2 className="font-display font-bold text-[26px] tracking-[-0.02em] text-ks-ink mt-1">{client.company_name}</h2>
+          <h2 className="font-display font-bold text-[22px] sm:text-[26px] tracking-[-0.02em] text-ks-ink mt-1 truncate">{client.company_name}</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={handleGenerateInvite} disabled={generatingInvite}>
-            {generatingInvite ? 'Generating…' : 'Generate Invite Link'}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <Button variant="outline" size="sm" onClick={handleGenerateInvite} disabled={generatingInvite}>
+            {generatingInvite ? 'Generating…' : 'Invite'}
           </Button>
           <div className="relative">
             <Button variant="dark" onClick={() => setShowDocMenu(v => !v)} disabled={creating}>
@@ -663,23 +663,23 @@ export default function ClientDetail() {
         </div>
       )}
 
-      {/* Client info stat bar */}
-      <div className="flex border border-ks-rule mb-8" style={{ backgroundColor: '#E8E5E0' }}>
-        <div className="flex-1 p-5 border-r border-ks-rule">
+      {/* Client info stat bar — 2×2 on mobile, row on desktop */}
+      <div className="grid grid-cols-2 sm:flex border border-ks-rule mb-8" style={{ backgroundColor: '#E8E5E0' }}>
+        <div className="p-4 sm:p-5 border-r border-b sm:border-b-0 border-ks-rule sm:flex-1">
           <MicroLabel color="silver" className="block mb-1">Contact</MicroLabel>
-          <p className="font-display font-bold text-[13px] text-ks-ink">{client.contact_name}</p>
-          <p className="font-body text-[11px] text-ks-silver">{client.contact_email}</p>
+          <p className="font-display font-bold text-[12px] sm:text-[13px] text-ks-ink">{client.contact_name}</p>
+          <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.contact_email}</p>
         </div>
-        <div className="flex-1 p-5 border-r border-ks-rule">
+        <div className="p-4 sm:p-5 border-b sm:border-b-0 sm:border-r border-ks-rule sm:flex-1">
           <MicroLabel color="silver" className="block mb-1">Location</MicroLabel>
           <p className="font-body text-[12px] text-ks-slate">{client.city}, {client.province}</p>
-          <p className="font-body text-[11px] text-ks-silver">{client.address_line1}</p>
+          <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.address_line1}</p>
         </div>
-        <div className="flex-1 p-5 border-r border-ks-rule">
+        <div className="p-4 sm:p-5 border-r border-ks-rule sm:flex-1">
           <MicroLabel color="silver" className="block mb-1">Reg. No.</MicroLabel>
           <p className="font-body text-[12px] text-ks-slate">{client.registration_number ?? '—'}</p>
         </div>
-        <div className="flex-1 p-5">
+        <div className="p-4 sm:p-5 sm:flex-1">
           <MicroLabel color="silver" className="block mb-1">VAT No.</MicroLabel>
           <p className="font-body text-[12px] text-ks-slate">{client.vat_number ?? '—'}</p>
         </div>
@@ -699,14 +699,14 @@ export default function ClientDetail() {
               <Link
                 key={doc.id}
                 to={`/admin/documents/${doc.id}`}
-                className={`flex items-center justify-between px-6 py-4 hover:bg-ks-smoke transition-colors ${i < documents.length - 1 ? 'border-b border-ks-hairline' : ''}`}
+                className={`flex items-start sm:items-center justify-between px-4 sm:px-6 py-4 hover:bg-ks-smoke transition-colors gap-3 ${i < documents.length - 1 ? 'border-b border-ks-hairline' : ''}`}
               >
-                <div>
-                  <p className="font-display font-bold text-[13px] text-ks-ink">{doc.title}</p>
+                <div className="min-w-0">
+                  <p className="font-display font-bold text-[13px] text-ks-ink truncate">{doc.title}</p>
                   <p className="font-body text-[11px] text-ks-silver mt-0.5">{doc.reference_number}</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-body text-[10px] text-ks-silver">{DOC_TYPE_LABELS[doc.type]}</span>
+                <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                  <span className="hidden sm:block font-body text-[10px] text-ks-silver">{DOC_TYPE_LABELS[doc.type]}</span>
                   <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[doc.status]}`}>
                     {doc.status}
                   </span>

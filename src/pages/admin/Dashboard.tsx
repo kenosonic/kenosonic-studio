@@ -18,21 +18,29 @@ export default function Dashboard() {
   return (
     <div>
       {/* Page header */}
-      <div className="px-10 pt-10 pb-6">
+      <div className="px-4 sm:px-10 pt-6 sm:pt-10 pb-6">
         <MicroLabel>Overview</MicroLabel>
-        <h2 className="font-display font-bold text-[24px] tracking-[-0.02em] text-ks-ink mt-1">Dashboard</h2>
+        <h2 className="font-display font-bold text-[22px] sm:text-[24px] tracking-[-0.02em] text-ks-ink mt-1">Dashboard</h2>
       </div>
 
-      {/* Stat bar */}
-      <div className="mx-10 mb-8 flex border border-ks-rule" style={{ backgroundColor: '#E8E5E0' }}>
-        <StatCell label="Active Clients" value={activeClients} />
-        <StatCell label="Draft Documents" value={draftDocs} />
-        <StatCell label="Awaiting Response" value={pendingDocs} highlight />
-        <StatCell label="Signed" value={signedDocs} />
+      {/* Stat bar — 2×2 on mobile, row on desktop */}
+      <div className="mx-4 sm:mx-10 mb-8 grid grid-cols-2 sm:flex border border-ks-rule" style={{ backgroundColor: '#E8E5E0' }}>
+        <div className="border-r border-b sm:border-b-0 border-ks-rule sm:flex-1">
+          <StatCell label="Active Clients" value={activeClients} />
+        </div>
+        <div className="border-b sm:border-b-0 sm:border-r border-ks-rule sm:flex-1">
+          <StatCell label="Draft Documents" value={draftDocs} />
+        </div>
+        <div className="border-r border-ks-rule sm:flex-1">
+          <StatCell label="Awaiting Response" value={pendingDocs} highlight />
+        </div>
+        <div className="sm:flex-1">
+          <StatCell label="Signed" value={signedDocs} />
+        </div>
       </div>
 
       {/* Quick actions */}
-      <div className="px-10 mb-8">
+      <div className="px-4 sm:px-10 mb-8">
         <MicroLabel className="block mb-4">Quick Actions</MicroLabel>
         <div className="flex gap-3 flex-wrap">
           <Link
@@ -51,7 +59,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent documents */}
-      <div className="px-10">
+      <div className="px-4 sm:px-10">
         <div className="flex items-center justify-between mb-4">
           <MicroLabel>Recent Documents</MicroLabel>
           <Link to="/admin/documents" className="font-body text-[10px] text-ks-lava uppercase tracking-[0.1em] hover:underline">
@@ -69,16 +77,16 @@ export default function Dashboard() {
               <Link
                 key={doc.id}
                 to={`/admin/documents/${doc.id}`}
-                className={`flex items-center justify-between px-6 py-4 hover:bg-ks-smoke transition-colors ${i < recent.length - 1 ? 'border-b border-ks-hairline' : ''}`}
+                className={`flex items-start sm:items-center justify-between px-4 sm:px-6 py-4 hover:bg-ks-smoke transition-colors gap-3 ${i < recent.length - 1 ? 'border-b border-ks-hairline' : ''}`}
               >
-                <div>
-                  <p className="font-display font-bold text-[13px] text-ks-ink">{doc.title}</p>
-                  <p className="font-body text-[11px] text-ks-silver mt-0.5">
+                <div className="min-w-0">
+                  <p className="font-display font-bold text-[13px] text-ks-ink truncate">{doc.title}</p>
+                  <p className="font-body text-[11px] text-ks-silver mt-0.5 truncate">
                     {(doc.client as { company_name?: string })?.company_name ?? ''} · {doc.reference_number}
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-body text-[10px] text-ks-silver">{DOC_TYPE_LABELS[doc.type]}</span>
+                <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                  <span className="hidden sm:block font-body text-[10px] text-ks-silver">{DOC_TYPE_LABELS[doc.type]}</span>
                   <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[doc.status]}`}>
                     {doc.status}
                   </span>

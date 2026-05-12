@@ -40,9 +40,9 @@ export default function DocumentEditor() {
   const client = document.client as Client
 
   return (
-    <div className="px-10 py-10">
+    <div className="px-4 sm:px-10 py-6 sm:py-10">
       {/* Breadcrumb + meta */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-3">
         <div>
           <div className="flex items-center gap-2 mb-2">
             {client && (
@@ -70,7 +70,8 @@ export default function DocumentEditor() {
         </div>
       </div>
 
-      {/* Document renderer */}
+      {/* Document renderer — scroll horizontally on small screens */}
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
       {document.type === 'invoice' && client && <InvoiceDocument document={document} client={client} />}
       {document.type === 'quote' && client && <QuoteDocument document={document} client={client} />}
       {document.type === 'proposal' && client && <ProposalDocument document={document} client={client} />}
@@ -85,6 +86,7 @@ export default function DocumentEditor() {
           <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is not yet available.</p>
         </div>
       )}
+      </div>
     </div>
   )
 }
