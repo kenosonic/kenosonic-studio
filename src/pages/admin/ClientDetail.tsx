@@ -7,8 +7,6 @@ import { supabase } from '../../lib/supabase'
 import { Button, MicroLabel } from '../../components/ui'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType, type ServiceType, type ProposalContent } from '../../types'
 
-const DOC_TYPES: DocumentType[] = ['invoice', 'quote', 'contract', 'report', 'audit', 'email', 'offboarding']
-
 const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Website Development',      serviceType: 'web' },
   { label: 'Digital Marketing',        serviceType: 'digital_marketing' },
@@ -19,7 +17,7 @@ const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Custom Development',       serviceType: 'custom_dev' },
 ]
 
-function getProposalContent(serviceType: ServiceType, contactName: string): ProposalContent {
+function getProposalContent(serviceType: ServiceType): ProposalContent {
   const sharedTerms = [
     { id: crypto.randomUUID(), heading: 'Ownership', body: 'Upon completion, you own all rights to the deliverables. Kenosonic Interactive retains the right to display the work in our portfolio.' },
     { id: crypto.randomUUID(), heading: 'Revisions', body: 'This proposal includes the agreed revision rounds. Additional rounds are billed at the stated hourly rate.' },
@@ -470,7 +468,7 @@ export default function ClientDetail() {
     setCreating(true)
     setShowDocMenu(false)
     setShowProposalSub(false)
-    const content = getProposalContent(serviceType, client.contact_name)
+    const content = getProposalContent(serviceType)
     const doc = await createDocument(
       client.id,
       'proposal',
@@ -487,7 +485,7 @@ export default function ClientDetail() {
     setCreating(true)
     setShowDocMenu(false)
 
-    const defaultContent: Record<DocumentType, Record<string, unknown>> = {
+    const defaultContent = {
       invoice: {
         issue_date: new Date().toISOString().split('T')[0],
         due_date: '',
