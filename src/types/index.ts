@@ -206,8 +206,16 @@ export interface EmailContent {
   cta?: { label: string; url: string }
 }
 
+export interface QuestionnaireCompetitor {
+  name: string
+  url: string
+  like: string
+  dislike: string
+}
+
 export interface QuestionnaireContent {
   // Step 1 — Basics
+  serviceType: string
   businessName: string
   tagline: string
   businessDescription: string
@@ -218,20 +226,44 @@ export interface QuestionnaireContent {
   address: string
   businessHours: string
   socialMediaLinks: { instagram?: string; linkedin?: string; facebook?: string; tiktok?: string }
-  // Step 2 — Goals
+  // Step 2 — Brand Identity
+  logoUrl?: string
+  brandGuideUrl?: string
+  toneOfVoice?: string[]
+  brandArchetype?: string
+  brandStory?: string
+  brandValues?: string
+  currentBrandIssues?: string
+  // Step 3 — Goals & Audience
   primaryGoal: string
   targetDemographics: string
   targetProblem: string
   targetAdvantage: string
   desiredVisitorActions: string[]
-  // Step 3 — Aesthetics
+  // Service-specific (conditional)
+  marketingChannels?: string[]
+  monthlyAdBudget?: string
+  existingCampaigns?: string
+  currentWebsiteUrl?: string
+  targetKeywords?: string
+  contentTopics?: string
+  techStackNotes?: string
+  // Step 4 — Aesthetics & Style
   desiredFeel: string[]
   designTrends: string[]
+  typographyFeel?: string
+  iconStyle?: string
+  imageStyle?: string
+  uiDensity?: string
+  inspirationUrls?: string
+  inspirationUploadUrls?: string[]
   brandColors: string
   colorsYouLike: string
   colorsYouDislike: string
   websiteReferences: string
-  // Step 4 — Content
+  // Step 5 — Competitors
+  competitors?: QuestionnaireCompetitor[]
+  // Step 6 — Content
   standardPages: string[]
   copyReadiness: string
   imagesReadiness: string
@@ -241,19 +273,24 @@ export interface QuestionnaireContent {
   ecommerceProducts?: string
   ecommercePayments?: string
   ecommerceShipping?: string
-  // Step 5 — Tech
+  // Step 7 — Tech
   platformPreference: string
   ownDomain: string
   domainDetails?: string
   haveHosting: string
   hostingDetails?: string
   thirdPartyIntegrations: string[]
-  // Step 6 — Timeline
+  // Step 8 — Timeline & Meeting Prep
   deadline: string
   deadlineReason: string
   availability: string
   budgetExtras: string
-  // Step 7 — Sign-Off
+  projectBudget?: string
+  decisionMakers?: string
+  previousAgencyExperience?: string
+  howTheyFoundUs?: string
+  successMetrics?: string
+  // Step 9 — Sign-Off
   additionalInfo: string
   confirmation: boolean
 }

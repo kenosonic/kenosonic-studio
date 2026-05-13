@@ -554,19 +554,45 @@ export default function ClientDetail() {
         support_terms: 'Post-project support is available on request at our standard hourly rate.',
       },
       questionnaire: {
+        serviceType: '',
         businessName: client.company_name,
         email: client.contact_email,
         phone: client.contact_phone,
         tagline: '', businessDescription: '', competitorDifference: '', yearsInBusiness: '',
         address: '', businessHours: '',
         socialMediaLinks: { instagram: '', linkedin: '', facebook: '', tiktok: '' },
+        // Brand Identity
+        logoUrl: '', brandGuideUrl: '',
+        toneOfVoice: [], brandArchetype: '', brandStory: '', brandValues: '', currentBrandIssues: '',
+        // Goals & Audience
         primaryGoal: '', targetDemographics: '', targetProblem: '', targetAdvantage: '',
-        desiredVisitorActions: [], desiredFeel: [], designTrends: [],
+        desiredVisitorActions: [],
+        // Service-specific
+        marketingChannels: [], monthlyAdBudget: '', existingCampaigns: '',
+        currentWebsiteUrl: '', targetKeywords: '', contentTopics: '', techStackNotes: '',
+        // Aesthetics
+        desiredFeel: [], designTrends: [],
+        typographyFeel: '', iconStyle: '', imageStyle: '', uiDensity: '',
+        inspirationUrls: '', inspirationUploadUrls: ['', '', ''],
         brandColors: '', colorsYouLike: '', colorsYouDislike: '', websiteReferences: '',
+        // Competitors
+        competitors: [
+          { name: '', url: '', like: '', dislike: '' },
+          { name: '', url: '', like: '', dislike: '' },
+          { name: '', url: '', like: '', dislike: '' },
+        ],
+        // Content
         standardPages: [], copyReadiness: '', imagesReadiness: '', logoReadiness: '',
         dynamicContentNeeds: '', specificFeatures: [],
-        platformPreference: '', ownDomain: '', haveHosting: '', thirdPartyIntegrations: [],
+        ecommerceProducts: '', ecommercePayments: '', ecommerceShipping: '',
+        // Tech
+        platformPreference: '', ownDomain: '', domainDetails: '', haveHosting: '', hostingDetails: '',
+        thirdPartyIntegrations: [],
+        // Timeline & Meeting Prep
         deadline: '', deadlineReason: '', availability: '', budgetExtras: '',
+        projectBudget: '', decisionMakers: '', previousAgencyExperience: '',
+        howTheyFoundUs: '', successMetrics: '',
+        // Sign-off
         additionalInfo: '', confirmation: false,
       },
     }
