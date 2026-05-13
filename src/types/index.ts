@@ -1,7 +1,7 @@
 export type ClientStatus = 'active' | 'inactive'
 export type ProjectStatus = 'prospect' | 'active' | 'completed' | 'paused'
 export type DocumentStatus = 'draft' | 'sent' | 'viewed' | 'approved' | 'signed' | 'rejected' | 'completed'
-export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding'
+export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding' | 'questionnaire'
 export type ServiceType = 'web' | 'digital_marketing' | 'brand' | 'google_ads' | 'social_media' | 'seo' | 'copywriting' | 'custom_dev' | 'plugins' | 'bpa' | 'other'
 export type UserRole = 'admin' | 'client'
 
@@ -47,12 +47,13 @@ export interface KSDocument {
   type: DocumentType
   title: string
   status: DocumentStatus
-  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | OffboardingContent | Record<string, unknown>
+  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | OffboardingContent | QuestionnaireContent | Record<string, unknown>
   reference_number: string
   sent_at?: string
   viewed_at?: string
   approved_at?: string
   signed_at?: string
+  completed_at?: string
   created_by: string
   client?: Client
 }
@@ -205,6 +206,58 @@ export interface EmailContent {
   cta?: { label: string; url: string }
 }
 
+export interface QuestionnaireContent {
+  // Step 1 — Basics
+  businessName: string
+  tagline: string
+  businessDescription: string
+  competitorDifference: string
+  yearsInBusiness: string
+  phone: string
+  email: string
+  address: string
+  businessHours: string
+  socialMediaLinks: { instagram?: string; linkedin?: string; facebook?: string; tiktok?: string }
+  // Step 2 — Goals
+  primaryGoal: string
+  targetDemographics: string
+  targetProblem: string
+  targetAdvantage: string
+  desiredVisitorActions: string[]
+  // Step 3 — Aesthetics
+  desiredFeel: string[]
+  designTrends: string[]
+  brandColors: string
+  colorsYouLike: string
+  colorsYouDislike: string
+  websiteReferences: string
+  // Step 4 — Content
+  standardPages: string[]
+  copyReadiness: string
+  imagesReadiness: string
+  logoReadiness: string
+  dynamicContentNeeds: string
+  specificFeatures: string[]
+  ecommerceProducts?: string
+  ecommercePayments?: string
+  ecommerceShipping?: string
+  // Step 5 — Tech
+  platformPreference: string
+  ownDomain: string
+  domainDetails?: string
+  haveHosting: string
+  hostingDetails?: string
+  thirdPartyIntegrations: string[]
+  // Step 6 — Timeline
+  deadline: string
+  deadlineReason: string
+  availability: string
+  budgetExtras: string
+  // Step 7 — Sign-Off
+  additionalInfo: string
+  confirmation: boolean
+}
+
 // Wizard data shape
 export interface WizardData {
   company_name: string
@@ -249,6 +302,7 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   audit: 'Audit Report',
   email: 'Email',
   offboarding: 'Offboarding',
+  questionnaire: 'Project Brief',
 }
 
 export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
@@ -260,6 +314,7 @@ export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
   audit: 'AUD',
   email: 'EM',
   offboarding: 'OFB',
+  questionnaire: 'BRIEF',
 }
 
 export const STATUS_COLORS: Record<DocumentStatus, string> = {

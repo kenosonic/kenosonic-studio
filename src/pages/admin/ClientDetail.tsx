@@ -548,6 +548,22 @@ export default function ClientDetail() {
         next_steps: ['Review all delivered assets', 'Confirm access to all platforms', 'Reach out within 14 days if you notice any issues'],
         support_terms: 'Post-project support is available on request at our standard hourly rate.',
       },
+      questionnaire: {
+        businessName: client.company_name,
+        email: client.contact_email,
+        phone: client.contact_phone,
+        tagline: '', businessDescription: '', competitorDifference: '', yearsInBusiness: '',
+        address: '', businessHours: '',
+        socialMediaLinks: { instagram: '', linkedin: '', facebook: '', tiktok: '' },
+        primaryGoal: '', targetDemographics: '', targetProblem: '', targetAdvantage: '',
+        desiredVisitorActions: [], desiredFeel: [], designTrends: [],
+        brandColors: '', colorsYouLike: '', colorsYouDislike: '', websiteReferences: '',
+        standardPages: [], copyReadiness: '', imagesReadiness: '', logoReadiness: '',
+        dynamicContentNeeds: '', specificFeatures: [],
+        platformPreference: '', ownDomain: '', haveHosting: '', thirdPartyIntegrations: [],
+        deadline: '', deadlineReason: '', availability: '', budgetExtras: '',
+        additionalInfo: '', confirmation: false,
+      },
     }
 
     const doc = await createDocument(
@@ -637,8 +653,8 @@ export default function ClientDetail() {
                   </button>
                 ))}
 
-                {/* Email + Offboarding */}
-                {(['email', 'offboarding'] as DocumentType[]).map(type => (
+                {/* Email + Offboarding + Questionnaire */}
+                {(['email', 'offboarding', 'questionnaire'] as DocumentType[]).map(type => (
                   <button key={type} onClick={() => handleCreateDoc(type)}
                     className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0">
                     {DOC_TYPE_LABELS[type]}

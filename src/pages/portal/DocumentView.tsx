@@ -11,6 +11,8 @@ import { ReportDocument } from '../../components/documents/Report/ReportDocument
 import { AuditDocument } from '../../components/documents/Audit/AuditDocument'
 import { EmailDocument } from '../../components/documents/Email/EmailDocument'
 import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
+import { QuestionnaireForm } from '../../components/documents/Questionnaire/QuestionnaireForm'
+import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type Client } from '../../types'
 import { exportToPDF } from '../../lib/pdf'
 
@@ -22,6 +24,7 @@ export default function DocumentView() {
   const [signerName, setSignerName] = useState(profile?.full_name ?? '')
   const [signing, setSigning] = useState(false)
   const [signed, setSigned] = useState(false)
+  const [briefSubmitted, setBriefSubmitted] = useState(false)
 
   // Mark as viewed
   if (document && document.status === 'sent' && !document.viewed_at) {
@@ -93,7 +96,12 @@ export default function DocumentView() {
       {document.type === 'audit' && client && <AuditDocument document={document} client={client} readonly />}
       {document.type === 'email' && client && <EmailDocument document={document} client={client} readonly />}
       {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} readonly />}
-      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding'].includes(document.type) && (
+      {document.type === 'questionnaire' && client && (
+        briefSubmitted || document.status === 'completed'
+          ? <QuestionnaireDocument document={document} client={client} />
+          : <QuestionnaireForm document={document} onComplete={() => { setBriefSubmitted(true); setDocument(d => d ? { ...d, status: 'completed', completed_at: new Date().toISOString() } : d) }} />
+      )}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <p className="font-body text-[13px] text-ks-slate">This document type doesn't have a visual template yet.</p>
         </div>
