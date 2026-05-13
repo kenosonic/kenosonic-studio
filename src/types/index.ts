@@ -293,6 +293,8 @@ export interface QuestionnaireContent {
   // Step 9 — Sign-Off
   additionalInfo: string
   confirmation: boolean
+  // Admin lock
+  locked?: boolean
 }
 
 // Wizard data shape

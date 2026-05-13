@@ -13,7 +13,7 @@ import { EmailDocument } from '../../components/documents/Email/EmailDocument'
 import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { QuestionnaireForm } from '../../components/documents/Questionnaire/QuestionnaireForm'
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
-import { DOC_TYPE_LABELS, STATUS_COLORS, type Client } from '../../types'
+import { DOC_TYPE_LABELS, STATUS_COLORS, type Client, type QuestionnaireContent } from '../../types'
 import { exportToPDF } from '../../lib/pdf'
 
 export default function DocumentView() {
@@ -24,7 +24,7 @@ export default function DocumentView() {
   const [signerName, setSignerName] = useState(profile?.full_name ?? '')
   const [signing, setSigning] = useState(false)
   const [signed, setSigned] = useState(false)
-  const [briefSubmitted, setBriefSubmitted] = useState(false)
+  const [briefSavedAt, setBriefSavedAt] = useState<Date | null>(null)
 
   // Mark as viewed
   if (document && document.status === 'sent' && !document.viewed_at) {
@@ -96,11 +96,30 @@ export default function DocumentView() {
       {document.type === 'audit' && client && <AuditDocument document={document} client={client} readonly />}
       {document.type === 'email' && client && <EmailDocument document={document} client={client} readonly />}
       {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} readonly />}
-      {document.type === 'questionnaire' && client && (
-        briefSubmitted || document.status === 'completed'
-          ? <QuestionnaireDocument document={document} client={client} />
-          : <QuestionnaireForm document={document} onComplete={() => { setBriefSubmitted(true); setDocument(d => d ? { ...d, status: 'completed', completed_at: new Date().toISOString() } : d) }} />
-      )}
+      {document.type === 'questionnaire' && client && (() => {
+        const isLocked = (document.content as QuestionnaireContent).locked === true
+        if (isLocked) return <QuestionnaireDocument document={document} client={client} />
+        return (
+          <div>
+            {briefSavedAt && (
+              <div className="bg-green-50 border border-green-200 px-5 py-3 mb-6 flex items-center gap-2">
+                <span className="text-green-600 text-[13px]">✓</span>
+                <p className="font-body text-[12px] text-green-700">
+                  Responses saved at {briefSavedAt.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}. You can update them any time.
+                </p>
+              </div>
+            )}
+            <QuestionnaireForm
+              document={document}
+              onComplete={() => {
+                const now = new Date()
+                setBriefSavedAt(now)
+                setDocument(d => d ? { ...d, status: 'completed', completed_at: now.toISOString() } : d)
+              }}
+            />
+          </div>
+        )
+      })()}
       {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <p className="font-body text-[13px] text-ks-slate">This document type doesn't have a visual template yet.</p>

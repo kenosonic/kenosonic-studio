@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useDocument, updateDocumentStatus, sendDocument } from '../../hooks/useDocument'
+import { supabase } from '../../lib/supabase'
 import { MicroLabel, Button } from '../../components/ui'
 import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
 import { QuoteDocument } from '../../components/documents/Quote/QuoteDocument'
@@ -10,7 +11,7 @@ import { AuditDocument } from '../../components/documents/Audit/AuditDocument'
 import { EmailDocument } from '../../components/documents/Email/EmailDocument'
 import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
-import { STATUS_COLORS, type DocumentStatus, type Client } from '../../types'
+import { STATUS_COLORS, type DocumentStatus, type Client, type QuestionnaireContent } from '../../types'
 import { useState } from 'react'
 
 const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
@@ -24,6 +25,18 @@ export default function DocumentEditor() {
   const { document, loading, setDocument } = useDocument(id)
   const [updating, setUpdating] = useState(false)
   const [sending, setSending] = useState(false)
+  const [locking, setLocking] = useState(false)
+
+  const isLocked = document?.type === 'questionnaire' && (document.content as QuestionnaireContent).locked === true
+
+  async function handleToggleLock() {
+    if (!document) return
+    setLocking(true)
+    const newContent = { ...(document.content as Record<string, unknown>), locked: !isLocked }
+    await supabase.from('documents').update({ content: newContent }).eq('id', document.id)
+    setDocument(d => d ? { ...d, content: newContent } : d)
+    setLocking(false)
+  }
 
   async function handleSend() {
     if (!document) return
@@ -78,6 +91,11 @@ export default function DocumentEditor() {
         </div>
 
         <div className="flex gap-3">
+          {document.type === 'questionnaire' && document.status === 'completed' && (
+            <Button variant={isLocked ? 'outline' : 'dark'} size="sm" onClick={handleToggleLock} disabled={locking}>
+              {locking ? 'Updating…' : isLocked ? 'Unlock Brief' : 'Lock Brief'}
+            </Button>
+          )}
           {document.status === 'draft' && (
             <Button variant="orange" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Sending…' : 'Send to Client'}
