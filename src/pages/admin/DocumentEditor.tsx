@@ -30,9 +30,10 @@ export default function DocumentEditor() {
     try {
       await sendDocument(document.id)
       setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err)
-      alert('Failed to send: ' + String(err))
+      const msg = err instanceof Error ? err.message : String(err)
+      alert(`Send failed:\n\n${msg}`)
     } finally {
       setSending(false)
     }

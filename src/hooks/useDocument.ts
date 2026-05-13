@@ -109,10 +109,14 @@ export async function signDocument(documentId: string, signerName: string, signe
 }
 
 export async function sendDocument(documentId: string) {
-  const { error } = await supabase.functions.invoke('send-document', {
+  const { data, error } = await supabase.functions.invoke('send-document', {
     body: { action: 'send', document_id: documentId },
   })
-  if (error) throw error
+  if (error) {
+    // Try to extract the message from the Edge Function response body
+    const msg = (data as Record<string, string> | null)?.error ?? error.message ?? String(error)
+    throw new Error(msg)
+  }
 }
 
 export async function notifyDocumentAction(documentId: string, notification_type: 'approved' | 'signed') {
