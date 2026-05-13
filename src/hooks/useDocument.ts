@@ -107,3 +107,17 @@ export async function signDocument(documentId: string, signerName: string, signe
   if (error) throw error
   await updateDocumentStatus(documentId, 'signed')
 }
+
+export async function sendDocument(documentId: string) {
+  const { error } = await supabase.functions.invoke('send-document', {
+    body: { action: 'send', document_id: documentId },
+  })
+  if (error) throw error
+}
+
+export async function notifyDocumentAction(documentId: string, notification_type: 'approved' | 'signed') {
+  // Fire-and-forget — failure is non-critical
+  supabase.functions.invoke('send-document', {
+    body: { action: 'notify', document_id: documentId, notification_type },
+  }).catch(console.warn)
+}

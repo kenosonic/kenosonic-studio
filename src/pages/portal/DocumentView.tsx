@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useDocument, signDocument, updateDocumentStatus } from '../../hooks/useDocument'
+import { useDocument, signDocument, updateDocumentStatus, notifyDocumentAction } from '../../hooks/useDocument'
 import { useAuth } from '../../hooks/useAuth'
 import { Button, MicroLabel } from '../../components/ui'
 import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
@@ -34,6 +34,7 @@ export default function DocumentView() {
     setSigning(true)
     await signDocument(document.id, signerName, profile?.full_name ?? '')
     setDocument(d => d ? { ...d, status: 'signed', signed_at: new Date().toISOString() } : d)
+    notifyDocumentAction(document.id, 'signed')
     setSigned(true)
     setSigning(false)
     setShowSignModal(false)
@@ -43,6 +44,7 @@ export default function DocumentView() {
     if (!document) return
     await updateDocumentStatus(document.id, 'approved')
     setDocument(d => d ? { ...d, status: 'approved' } : d)
+    notifyDocumentAction(document.id, 'approved')
   }
 
   if (loading) return <div className="font-body text-[12px] text-ks-silver">Loading...</div>

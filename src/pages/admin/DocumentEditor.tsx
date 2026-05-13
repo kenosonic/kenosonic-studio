@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { useDocument, updateDocumentStatus } from '../../hooks/useDocument'
+import { useDocument, updateDocumentStatus, sendDocument } from '../../hooks/useDocument'
 import { MicroLabel, Button } from '../../components/ui'
 import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
 import { QuoteDocument } from '../../components/documents/Quote/QuoteDocument'
@@ -13,7 +13,6 @@ import { STATUS_COLORS, type DocumentStatus, type Client } from '../../types'
 import { useState } from 'react'
 
 const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
-  draft: 'sent',
   sent: 'approved',
   viewed: 'approved',
   approved: 'signed',
@@ -23,6 +22,21 @@ export default function DocumentEditor() {
   const { id } = useParams<{ id: string }>()
   const { document, loading, setDocument } = useDocument(id)
   const [updating, setUpdating] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  async function handleSend() {
+    if (!document) return
+    setSending(true)
+    try {
+      await sendDocument(document.id)
+      setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to send: ' + String(err))
+    } finally {
+      setSending(false)
+    }
+  }
 
   async function handleStatusUpdate() {
     if (!document) return
@@ -62,8 +76,13 @@ export default function DocumentEditor() {
         </div>
 
         <div className="flex gap-3">
+          {document.status === 'draft' && (
+            <Button variant="orange" size="sm" onClick={handleSend} disabled={sending}>
+              {sending ? 'Sending…' : 'Send to Client'}
+            </Button>
+          )}
           {NEXT_STATUS[document.status] && (
-            <Button variant="orange" size="sm" onClick={handleStatusUpdate} disabled={updating}>
+            <Button variant="dark" size="sm" onClick={handleStatusUpdate} disabled={updating}>
               {updating ? 'Updating…' : `Mark as ${NEXT_STATUS[document.status]}`}
             </Button>
           )}
