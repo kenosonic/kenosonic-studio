@@ -19,6 +19,10 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   questionnaire: 'Project Brief',
 }
 
+const IS_FORM_DOC: Record<string, boolean> = {
+  questionnaire: true,
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -66,28 +70,33 @@ function ksFooter() {
 
 function docSendHtml(client: Record<string, string>, doc: Record<string, unknown>): string {
   const typeLabel = DOC_TYPE_LABELS[doc.type as string] ?? String(doc.type)
+  const isForm = IS_FORM_DOC[doc.type as string] ?? false
   const portalUrl = `${SITE_URL}/portal/documents/${doc.id}`
+  const heading = isForm ? `Please fill in your ${typeLabel}` : 'You have a new document'
+  const body = isForm
+    ? `Kenosonic Interactive has sent you a <strong>${typeLabel}</strong> to complete. It only takes a few minutes — click the button below to get started.`
+    : `Kenosonic Interactive has shared a <strong>${typeLabel}</strong> with you that may require your review or signature.`
+  const ctaLabel = isForm ? `Fill in your ${typeLabel} →` : 'View Document →'
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>New ${typeLabel} from Kenosonic</title></head>
+<title>${heading}</title></head>
 <body style="margin:0;padding:32px 16px;background:#F0EDE8;font-family:Inter,-apple-system,sans-serif;">
 <div style="max-width:560px;margin:0 auto;">
   ${ksHeader()}
   <div style="background:#fff;padding:36px 36px 40px;">
     <p style="font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#F56E0F;margin:0 0 8px;">${typeLabel}</p>
-    <h1 style="font-size:22px;font-weight:700;color:#0D0D0D;letter-spacing:-0.02em;margin:0 0 20px;line-height:1.2;">You have a new document</h1>
+    <h1 style="font-size:22px;font-weight:700;color:#0D0D0D;letter-spacing:-0.02em;margin:0 0 20px;line-height:1.2;">${heading}</h1>
     <p style="font-size:14px;color:#3A3A3A;line-height:1.7;margin:0 0 8px;">Hi ${client.contact_name},</p>
-    <p style="font-size:14px;color:#3A3A3A;line-height:1.7;margin:0 0 28px;">
-      Kenosonic Interactive has shared a <strong>${typeLabel}</strong> with you that may require your review or signature.
-    </p>
+    <p style="font-size:14px;color:#3A3A3A;line-height:1.7;margin:0 0 28px;">${body}</p>
     <div style="background:#F8F6F3;border:0.5px solid #E8E5E0;padding:20px 24px;margin:0 0 28px;">
-      <p style="font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#9A9A9A;margin:0 0 6px;">Document</p>
+      <p style="font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#9A9A9A;margin:0 0 6px;">Reference</p>
       <p style="font-size:15px;font-weight:700;color:#0D0D0D;margin:0 0 4px;">${doc.title}</p>
       <p style="font-size:11px;color:#9A9A9A;margin:0;">Ref: ${doc.reference_number}</p>
     </div>
     <a href="${portalUrl}"
        style="display:block;background:#F56E0F;color:#fff;text-decoration:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;text-align:center;padding:16px 32px;border-radius:4px;letter-spacing:0.02em;">
-      View Document →
+      ${ctaLabel}
     </a>
     <p style="font-size:11px;color:#9A9A9A;margin:20px 0 0;line-height:1.6;">
       If prompted to sign in, use <strong>${client.contact_email}</strong>.
