@@ -191,7 +191,58 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    const { action, document_id, notification_type } = await req.json()
+    const { action, document_id, notification_type, invite_token } = await req.json()
+
+    // ── action: send-invite ──────────────────────────────────────────────────
+    if (action === 'send-invite') {
+      if (!invite_token) return json({ error: 'invite_token required' }, 400)
+
+      // Load client via the invite token
+      const { data: invite } = await db
+        .from('invites')
+        .select('client_id')
+        .eq('token', invite_token)
+        .single()
+      if (!invite) return json({ error: 'Invite not found' }, 404)
+
+      const { data: clientData } = await db
+        .from('clients')
+        .select('contact_name, contact_email')
+        .eq('id', invite.client_id)
+        .single()
+      if (!clientData) return json({ error: 'Client not found' }, 404)
+
+      const inviteUrl = `${SITE_URL}/invite/${invite_token}`
+      const subject = `You've been invited to the Kenosonic Interactive Client Portal`
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>You're invited</title></head>
+<body style="margin:0;padding:32px 16px;background:#F0EDE8;font-family:Inter,-apple-system,sans-serif;">
+<div style="max-width:560px;margin:0 auto;">
+  ${ksHeader()}
+  <div style="background:#fff;padding:36px 36px 40px;">
+    <p style="font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#F56E0F;margin:0 0 8px;">Client Portal Invite</p>
+    <h1 style="font-size:22px;font-weight:700;color:#0D0D0D;letter-spacing:-0.02em;margin:0 0 20px;line-height:1.2;">You're invited to your client portal</h1>
+    <p style="font-size:14px;color:#3A3A3A;line-height:1.7;margin:0 0 8px;">Hi ${clientData.contact_name},</p>
+    <p style="font-size:14px;color:#3A3A3A;line-height:1.7;margin:0 0 28px;">
+      Kenosonic Interactive has set up a secure portal for you to view, approve, and sign your documents. Click the button below to create your account and get access.
+    </p>
+    <a href="${inviteUrl}"
+       style="display:block;background:#F56E0F;color:#fff;text-decoration:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;text-align:center;padding:16px 32px;border-radius:4px;letter-spacing:0.02em;">
+      Access My Portal →
+    </a>
+    <p style="font-size:11px;color:#9A9A9A;margin:20px 0 0;line-height:1.6;">
+      This invite link is for your use only and expires in 30 days.
+    </p>
+  </div>
+  ${ksFooter()}
+</div>
+</body></html>`
+
+      await sendEmail(clientData.contact_email, subject, html)
+      return json({ success: true })
+    }
+
     if (!document_id) return json({ error: 'document_id required' }, 400)
 
     // Load document + client

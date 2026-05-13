@@ -449,28 +449,33 @@ export default function ClientDetail() {
   const [showDocMenu, setShowDocMenu] = useState(false)
   const [showProposalSub, setShowProposalSub] = useState(false)
   const [showAuditSub, setShowAuditSub] = useState(false)
-  const [inviteUrl, setInviteUrl] = useState('')
-  const [generatingInvite, setGeneratingInvite] = useState(false)
-  const [inviteCopied, setInviteCopied] = useState(false)
+  const [inviteSent, setInviteSent] = useState(false)
+  const [sendingInvite, setSendingInvite] = useState(false)
+  const [inviteError, setInviteError] = useState('')
 
-  async function handleGenerateInvite() {
+  async function handleSendInvite() {
     if (!client) return
-    setGeneratingInvite(true)
-    setInviteUrl('')
-    const { data, error } = await supabase
-      .from('invites')
-      .insert({ client_id: client.id })
-      .select('token')
-      .single()
-    setGeneratingInvite(false)
-    if (error || !data) return
-    setInviteUrl(`${window.location.origin}/invite/${data.token}`)
-  }
-
-  async function handleCopyInvite() {
-    await navigator.clipboard.writeText(inviteUrl)
-    setInviteCopied(true)
-    setTimeout(() => setInviteCopied(false), 2000)
+    setSendingInvite(true)
+    setInviteError('')
+    setInviteSent(false)
+    try {
+      const { data, error } = await supabase
+        .from('invites')
+        .insert({ client_id: client.id })
+        .select('token')
+        .single()
+      if (error || !data) throw new Error('Could not create invite')
+      const { error: fnError } = await supabase.functions.invoke('send-document', {
+        body: { action: 'send-invite', document_id: null, invite_token: data.token },
+      })
+      if (fnError) throw fnError
+      setInviteSent(true)
+      setTimeout(() => setInviteSent(false), 4000)
+    } catch (err: unknown) {
+      setInviteError(err instanceof Error ? err.message : 'Failed to send invite')
+    } finally {
+      setSendingInvite(false)
+    }
   }
 
   async function handleCreateProposal(serviceType: ServiceType) {
@@ -596,8 +601,8 @@ export default function ClientDetail() {
           <h2 className="font-display font-bold text-[22px] sm:text-[26px] tracking-[-0.02em] text-ks-ink mt-1 truncate">{client.company_name}</h2>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <Button variant="outline" size="sm" onClick={handleGenerateInvite} disabled={generatingInvite}>
-            {generatingInvite ? 'Generating…' : 'Invite'}
+          <Button variant="outline" size="sm" onClick={handleSendInvite} disabled={sendingInvite}>
+            {sendingInvite ? 'Sending…' : inviteSent ? 'Invite Sent ✓' : 'Send Invite'}
           </Button>
           <div className="relative">
             <Button variant="dark" onClick={() => setShowDocMenu(v => !v)} disabled={creating}>
@@ -666,16 +671,10 @@ export default function ClientDetail() {
         </div>
       </div>
 
-      {/* Invite URL banner */}
-      {inviteUrl && (
-        <div className="flex items-center gap-3 bg-white border border-ks-rule px-5 py-3 mb-6">
-          <p className="font-body text-[11px] text-ks-silver flex-1 truncate">{inviteUrl}</p>
-          <button
-            onClick={handleCopyInvite}
-            className="font-body font-medium text-[10px] uppercase tracking-[0.1em] text-ks-lava hover:opacity-70 transition-opacity flex-shrink-0"
-          >
-            {inviteCopied ? 'Copied!' : 'Copy'}
-          </button>
+      {/* Invite feedback */}
+      {inviteError && (
+        <div className="bg-red-50 border border-red-200 px-5 py-3 mb-6">
+          <p className="font-body text-[11px] text-red-600">{inviteError}</p>
         </div>
       )}
 
