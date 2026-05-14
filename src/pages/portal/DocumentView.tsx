@@ -18,11 +18,12 @@ import { exportToPDF } from '../../lib/pdf'
 
 export default function DocumentView() {
   const { id } = useParams<{ id: string }>()
-  const { document, loading, setDocument } = useDocument(id)
+  const { document, loading, error: loadError, setDocument } = useDocument(id)
   const { profile } = useAuth()
   const [showSignModal, setShowSignModal] = useState(false)
   const [signerName, setSignerName] = useState(profile?.full_name ?? '')
   const [signing, setSigning] = useState(false)
+  const [signError, setSignError] = useState<string | null>(null)
   const [signed, setSigned] = useState(false)
   const [briefSavedAt, setBriefSavedAt] = useState<Date | null>(null)
 
@@ -35,12 +36,18 @@ export default function DocumentView() {
   async function handleSign() {
     if (!document || !signerName.trim()) return
     setSigning(true)
-    await signDocument(document.id, signerName, profile?.full_name ?? '')
-    setDocument(d => d ? { ...d, status: 'signed', signed_at: new Date().toISOString() } : d)
-    notifyDocumentAction(document.id, 'signed')
-    setSigned(true)
-    setSigning(false)
-    setShowSignModal(false)
+    setSignError(null)
+    try {
+      await signDocument(document.id, signerName, profile?.full_name ?? '')
+      setDocument(d => d ? { ...d, status: 'signed', signed_at: new Date().toISOString() } : d)
+      notifyDocumentAction(document.id, 'signed')
+      setSigned(true)
+      setShowSignModal(false)
+    } catch (err: unknown) {
+      setSignError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSigning(false)
+    }
   }
 
   async function handleApprove() {
@@ -51,6 +58,7 @@ export default function DocumentView() {
   }
 
   if (loading) return <div className="font-body text-[12px] text-ks-silver">Loading...</div>
+  if (loadError) return <div className="font-body text-[12px] text-red-500">Failed to load document: {loadError}</div>
   if (!document) return <div className="font-body text-[12px] text-ks-silver">Document not found.</div>
 
   const client = document.client as Client
@@ -146,6 +154,9 @@ export default function DocumentView() {
                 placeholder="Type your full name"
               />
             </div>
+            {signError && (
+              <p className="font-body text-[11px] text-red-600 mb-4">Failed to sign: {signError}</p>
+            )}
             <div className="flex gap-3">
               <Button variant="ghost" onClick={() => setShowSignModal(false)}>Cancel</Button>
               <Button variant="orange" onClick={handleSign} disabled={signing || !signerName.trim()}>

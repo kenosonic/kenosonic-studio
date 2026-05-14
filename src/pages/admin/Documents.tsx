@@ -7,7 +7,7 @@ import { useState } from 'react'
 const ALL_TYPES: Array<DocumentType | 'all'> = ['all', 'invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding']
 
 export default function Documents() {
-  const { documents, loading } = useDocuments()
+  const { documents, loading, error } = useDocuments()
   const [typeFilter, setTypeFilter] = useState<DocumentType | 'all'>('all')
 
   const filtered = typeFilter === 'all' ? documents : documents.filter(d => d.type === typeFilter)
@@ -35,6 +35,13 @@ export default function Documents() {
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 px-4 py-3">
+          <span className="text-red-500 text-[13px] mt-px">✕</span>
+          <p className="font-body text-[12px] text-red-700">Failed to load documents: {error}</p>
+        </div>
+      )}
 
       {loading ? (
         <p className="font-body text-[12px] text-ks-silver">Loading...</p>

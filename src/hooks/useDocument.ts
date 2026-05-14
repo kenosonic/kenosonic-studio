@@ -6,27 +6,31 @@ import { DOC_TYPE_PREFIX } from '../types'
 export function useDocuments(clientId?: string) {
   const [documents, setDocuments] = useState<KSDocument[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true)
+    setError(null)
     let query = supabase
       .from('documents')
       .select('*, client:clients(company_name, contact_name)')
       .order('created_at', { ascending: false })
     if (clientId) query = query.eq('client_id', clientId)
-    const { data } = await query
+    const { data, error: fetchError } = await query
+    if (fetchError) setError(fetchError.message)
     setDocuments(data ?? [])
     setLoading(false)
   }, [clientId])
 
   useEffect(() => { fetchDocuments() }, [fetchDocuments])
 
-  return { documents, loading, refetch: fetchDocuments }
+  return { documents, loading, error, refetch: fetchDocuments }
 }
 
 export function useDocument(id: string | undefined) {
   const [document, setDocument] = useState<KSDocument | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) { setLoading(false); return }
@@ -35,13 +39,14 @@ export function useDocument(id: string | undefined) {
       .select('*, client:clients(*)')
       .eq('id', id)
       .single()
-      .then(({ data }) => {
+      .then(({ data, error: fetchError }) => {
+        if (fetchError) setError(fetchError.message)
         setDocument(data)
         setLoading(false)
       })
   }, [id])
 
-  return { document, loading, setDocument }
+  return { document, loading, error, setDocument }
 }
 
 export async function createDocument(

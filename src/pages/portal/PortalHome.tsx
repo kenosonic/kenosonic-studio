@@ -5,8 +5,11 @@ import { MicroLabel } from '../../components/ui'
 import { DOC_TYPE_LABELS, STATUS_COLORS } from '../../types'
 
 export default function PortalHome() {
-  const { profile } = useAuth()
-  const { documents, loading } = useDocuments(profile?.client_id)
+  const { profile, loading: authLoading } = useAuth()
+  const { documents, loading: docsLoading, error } = useDocuments(
+    authLoading ? undefined : profile?.client_id
+  )
+  const loading = authLoading || docsLoading
 
   return (
     <div>
@@ -20,9 +23,19 @@ export default function PortalHome() {
         </p>
       </div>
 
+      {error && (
+        <div className="mb-6 flex items-start gap-2 bg-red-50 border border-red-200 px-4 py-3">
+          <span className="text-red-500 text-[13px] mt-px">✕</span>
+          <div>
+            <p className="font-body font-medium text-[12px] text-red-700">Couldn't load your documents</p>
+            <p className="font-body text-[11px] text-red-600 mt-0.5">{error}</p>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p className="font-body text-[12px] text-ks-silver">Loading...</p>
-      ) : documents.length === 0 ? (
+      ) : error ? null : documents.length === 0 ? (
         <div className="bg-white border border-ks-hairline p-16 text-center">
           <p className="font-body text-[12px] text-ks-silver">No documents have been shared with you yet.</p>
         </div>

@@ -22,10 +22,12 @@ const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
 
 export default function DocumentEditor() {
   const { id } = useParams<{ id: string }>()
-  const { document, loading, setDocument } = useDocument(id)
+  const { document, loading, error: loadError, setDocument } = useDocument(id)
   const [updating, setUpdating] = useState(false)
   const [sending, setSending] = useState(false)
   const [locking, setLocking] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sendSuccess, setSendSuccess] = useState(false)
 
   const isLocked = document?.type === 'questionnaire' && (document.content as QuestionnaireContent).locked === true
 
@@ -41,13 +43,15 @@ export default function DocumentEditor() {
   async function handleSend() {
     if (!document) return
     setSending(true)
+    setSendError(null)
+    setSendSuccess(false)
     try {
       await sendDocument(document.id)
       setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
+      setSendSuccess(true)
     } catch (err: unknown) {
-      console.error(err)
       const msg = err instanceof Error ? err.message : String(err)
-      alert(`Send failed:\n\n${msg}`)
+      setSendError(msg)
     } finally {
       setSending(false)
     }
@@ -64,6 +68,7 @@ export default function DocumentEditor() {
   }
 
   if (loading) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
+  if (loadError) return <div className="px-10 py-10 text-red-500 font-body text-[12px]">Failed to load document: {loadError}</div>
   if (!document) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Document not found.</div>
 
   const client = document.client as Client
@@ -108,6 +113,37 @@ export default function DocumentEditor() {
           )}
         </div>
       </div>
+
+      {/* Send feedback banners */}
+      {sendSuccess && (
+        <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 px-4 py-3">
+          <span className="text-green-600 text-[13px]">✓</span>
+          <p className="font-body text-[12px] text-green-700">Document sent successfully. The client will receive an email with a link.</p>
+        </div>
+      )}
+      {sendError && (
+        <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 px-4 py-3">
+          <span className="text-red-500 text-[13px] mt-px">✕</span>
+          <div>
+            <p className="font-body font-medium text-[12px] text-red-700">Failed to send document</p>
+            <p className="font-body text-[11px] text-red-600 mt-0.5">{sendError}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Client activity info */}
+      {document.viewed_at && (
+        <div className="mb-4 flex items-center gap-2 bg-ks-smoke border border-ks-hairline px-4 py-3">
+          <span className="font-body text-[11px] text-ks-silver">
+            Viewed by client on {new Date(document.viewed_at).toLocaleString('en-ZA')}
+          </span>
+        </div>
+      )}
+      {document.status === 'sent' && !document.viewed_at && (
+        <div className="mb-4 flex items-center gap-2 bg-ks-smoke border border-ks-hairline px-4 py-3">
+          <span className="font-body text-[11px] text-ks-silver">Sent — awaiting client view</span>
+        </div>
+      )}
 
       {/* Document renderer — scroll horizontally on small screens */}
       <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
