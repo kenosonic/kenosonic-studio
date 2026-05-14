@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { useNotifications } from '../../hooks/useNotifications'
+import { NotificationsPanel } from './NotificationsPanel'
 
 const NAV = [
   { to: '/admin', label: 'Dashboard', icon: '▪' },
@@ -8,14 +10,30 @@ const NAV = [
   { to: '/admin/documents', label: 'Documents', icon: '◈' },
 ]
 
+function BellIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  )
+}
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [navOpen, setNavOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const { groups, unreadCount, loading, markAllRead } = useNotifications()
 
   async function handleSignOut() {
     await signOut()
     navigate('/login')
+  }
+
+  function openNotifications() {
+    setNavOpen(false)
+    setNotifOpen(true)
   }
 
   return (
@@ -29,15 +47,36 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <h1 className="font-display font-bold text-[15px] tracking-[-0.02em] text-white">
           KENO <span style={{ color: '#F56E0F' }}>SONIC</span>
         </h1>
-        <button
-          onClick={() => setNavOpen(true)}
-          className="flex flex-col gap-1.5 p-2"
-          aria-label="Open menu"
-        >
-          <span className="block w-5 h-0.5 bg-white" />
-          <span className="block w-5 h-0.5 bg-white" />
-          <span className="block w-5 h-0.5 bg-white" />
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* Bell — mobile */}
+          <button
+            onClick={openNotifications}
+            className="relative flex items-center justify-center text-white p-1"
+            aria-label="Notifications"
+          >
+            <BellIcon />
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 font-body font-medium text-[8px] leading-none px-1 py-0.5 rounded-full"
+                style={{ backgroundColor: '#F56E0F', color: '#fff', minWidth: '14px', textAlign: 'center' }}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Hamburger */}
+          <button
+            onClick={() => setNavOpen(true)}
+            className="flex flex-col gap-1.5 p-2"
+            aria-label="Open menu"
+          >
+            <span className="block w-5 h-0.5 bg-white" />
+            <span className="block w-5 h-0.5 bg-white" />
+            <span className="block w-5 h-0.5 bg-white" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile backdrop */}
@@ -69,11 +108,30 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Studio OS
             </p>
           </div>
-          <button
-            onClick={() => setNavOpen(false)}
-            className="md:hidden text-white text-[20px] leading-none p-1"
-            aria-label="Close menu"
-          >×</button>
+          <div className="flex items-center gap-2">
+            {/* Bell — desktop */}
+            <button
+              onClick={openNotifications}
+              className="relative hidden md:flex items-center justify-center text-[#5A5A5A] hover:text-white transition-colors p-1"
+              aria-label="Notifications"
+            >
+              <BellIcon />
+              {unreadCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 font-body font-medium text-[8px] leading-none px-1 py-0.5 rounded-full"
+                  style={{ backgroundColor: '#F56E0F', color: '#fff', minWidth: '14px', textAlign: 'center' }}
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setNavOpen(false)}
+              className="md:hidden text-white text-[20px] leading-none p-1"
+              aria-label="Close menu"
+            >×</button>
+          </div>
         </div>
 
         {/* Nav */}
@@ -115,6 +173,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 bg-ks-ash min-h-screen overflow-auto pt-14 md:pt-0">
         {children}
       </main>
+
+      {/* Notifications panel */}
+      {notifOpen && (
+        <NotificationsPanel
+          groups={groups}
+          unreadCount={unreadCount}
+          loading={loading}
+          onClose={() => setNotifOpen(false)}
+          onMarkAllRead={() => { markAllRead(); }}
+        />
+      )}
     </div>
   )
 }

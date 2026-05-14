@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useDocument, signDocument, updateDocumentStatus, notifyDocumentAction } from '../../hooks/useDocument'
 import { useAuth } from '../../hooks/useAuth'
@@ -15,6 +15,7 @@ import { QuestionnaireForm } from '../../components/documents/Questionnaire/Ques
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type Client, type QuestionnaireContent } from '../../types'
 import { exportToPDF } from '../../lib/pdf'
+import { createNotification } from '../../hooks/useNotifications'
 
 export default function DocumentView() {
   const { id } = useParams<{ id: string }>()
@@ -27,11 +28,22 @@ export default function DocumentView() {
   const [signed, setSigned] = useState(false)
   const [briefSavedAt, setBriefSavedAt] = useState<Date | null>(null)
 
-  // Mark as viewed
-  if (document && document.status === 'sent' && !document.viewed_at) {
+  // Mark as viewed (once, when doc first loads with status 'sent')
+  useEffect(() => {
+    if (!document || document.status !== 'sent' || document.viewed_at) return
+    const client = document.client as Client
     updateDocumentStatus(document.id, 'viewed')
-    setDocument(d => d ? { ...d, status: 'viewed' } : d)
-  }
+    setDocument(d => d ? { ...d, status: 'viewed', viewed_at: new Date().toISOString() } : d)
+    createNotification({
+      document_id: document.id,
+      client_id: client.id,
+      client_name: client.company_name,
+      action: 'viewed',
+      document_title: document.title,
+      document_reference: document.reference_number,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [document?.id])
 
   async function handleSign() {
     if (!document || !signerName.trim()) return
@@ -39,8 +51,17 @@ export default function DocumentView() {
     setSignError(null)
     try {
       await signDocument(document.id, signerName, profile?.full_name ?? '')
+      const client = document.client as Client
       setDocument(d => d ? { ...d, status: 'signed', signed_at: new Date().toISOString() } : d)
       notifyDocumentAction(document.id, 'signed')
+      createNotification({
+        document_id: document.id,
+        client_id: client.id,
+        client_name: client.company_name,
+        action: 'signed',
+        document_title: document.title,
+        document_reference: document.reference_number,
+      })
       setSigned(true)
       setShowSignModal(false)
     } catch (err: unknown) {
@@ -52,9 +73,18 @@ export default function DocumentView() {
 
   async function handleApprove() {
     if (!document) return
+    const client = document.client as Client
     await updateDocumentStatus(document.id, 'approved')
     setDocument(d => d ? { ...d, status: 'approved' } : d)
     notifyDocumentAction(document.id, 'approved')
+    createNotification({
+      document_id: document.id,
+      client_id: client.id,
+      client_name: client.company_name,
+      action: 'approved',
+      document_title: document.title,
+      document_reference: document.reference_number,
+    })
   }
 
   if (loading) return <div className="font-body text-[12px] text-ks-silver">Loading...</div>
@@ -123,6 +153,14 @@ export default function DocumentView() {
                 const now = new Date()
                 setBriefSavedAt(now)
                 setDocument(d => d ? { ...d, status: 'completed', completed_at: now.toISOString() } : d)
+                createNotification({
+                  document_id: document.id,
+                  client_id: client.id,
+                  client_name: client.company_name,
+                  action: 'completed',
+                  document_title: document.title,
+                  document_reference: document.reference_number,
+                })
               }}
             />
           </div>
