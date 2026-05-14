@@ -37,7 +37,12 @@ export function useClient(id: string | undefined) {
     })
   }, [id])
 
-  return { client, loading, error }
+  return { client, setClient, loading, error }
+}
+
+export async function updateClient(id: string, data: Partial<Omit<Client, 'id' | 'created_at' | 'created_by'>>) {
+  const { error } = await supabase.from('clients').update(data).eq('id', id)
+  if (error) throw error
 }
 
 export async function createClient(data: WizardData, userId: string) {

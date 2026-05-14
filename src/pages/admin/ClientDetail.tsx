@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useClient } from '../../hooks/useClient'
+import { useClient, updateClient } from '../../hooks/useClient'
 import { useDocuments, createDocument } from '../../hooks/useDocument'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { Button, MicroLabel } from '../../components/ui'
-import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType, type ServiceType, type ProposalContent, type AuditContent } from '../../types'
+import { DOC_TYPE_LABELS, STATUS_COLORS, type Client, type DocumentType, type ServiceType, type ProposalContent, type AuditContent } from '../../types'
 
 const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Website Development',      serviceType: 'web' },
@@ -439,9 +439,34 @@ function getProposalContent(serviceType: ServiceType): ProposalContent {
   }
 }
 
+type EditForm = Pick<Client,
+  'company_name' | 'contact_name' | 'contact_email' | 'contact_phone' |
+  'address_line1' | 'address_line2' | 'city' | 'province' | 'country' |
+  'registration_number' | 'vat_number' | 'industry' | 'notes' | 'status'
+>
+
+function toEditForm(c: Client): EditForm {
+  return {
+    company_name: c.company_name,
+    contact_name: c.contact_name,
+    contact_email: c.contact_email,
+    contact_phone: c.contact_phone,
+    address_line1: c.address_line1,
+    address_line2: c.address_line2 ?? '',
+    city: c.city,
+    province: c.province,
+    country: c.country,
+    registration_number: c.registration_number ?? '',
+    vat_number: c.vat_number ?? '',
+    industry: c.industry,
+    notes: c.notes ?? '',
+    status: c.status,
+  }
+}
+
 export default function ClientDetail() {
   const { id } = useParams<{ id: string }>()
-  const { client, loading } = useClient(id)
+  const { client, setClient, loading } = useClient(id)
   const { documents } = useDocuments(id)
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -452,6 +477,49 @@ export default function ClientDetail() {
   const [inviteSent, setInviteSent] = useState(false)
   const [sendingInvite, setSendingInvite] = useState(false)
   const [inviteError, setInviteError] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState<EditForm | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  function startEdit() {
+    if (!client) return
+    setEditForm(toEditForm(client))
+    setSaveError(null)
+    setEditing(true)
+  }
+
+  function cancelEdit() {
+    setEditing(false)
+    setEditForm(null)
+    setSaveError(null)
+  }
+
+  async function handleSave() {
+    if (!client || !editForm) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await updateClient(client.id, {
+        ...editForm,
+        address_line2: editForm.address_line2 || null,
+        registration_number: editForm.registration_number || null,
+        vat_number: editForm.vat_number || null,
+        notes: editForm.notes || null,
+      })
+      setClient(c => c ? { ...c, ...editForm } : c)
+      setEditing(false)
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function field(key: keyof EditForm) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setEditForm(f => f ? { ...f, [key]: e.target.value } : f)
+  }
 
   async function handleSendInvite() {
     if (!client) return
@@ -630,6 +698,9 @@ export default function ClientDetail() {
           <Button variant="outline" size="sm" onClick={handleSendInvite} disabled={sendingInvite}>
             {sendingInvite ? 'Sending…' : inviteSent ? 'Invite Sent ✓' : 'Send Invite'}
           </Button>
+          {!editing && (
+            <Button variant="outline" size="sm" onClick={startEdit}>Edit</Button>
+          )}
           <div className="relative">
             <Button variant="dark" onClick={() => setShowDocMenu(v => !v)} disabled={creating}>
               {creating ? 'Creating…' : '+ New Document'}
@@ -704,27 +775,94 @@ export default function ClientDetail() {
         </div>
       )}
 
-      {/* Client info stat bar — 2×2 on mobile, row on desktop */}
-      <div className="grid grid-cols-2 sm:flex border border-ks-rule mb-8" style={{ backgroundColor: '#E8E5E0' }}>
-        <div className="p-4 sm:p-5 border-r border-b sm:border-b-0 border-ks-rule sm:flex-1">
-          <MicroLabel color="silver" className="block mb-1">Contact</MicroLabel>
-          <p className="font-display font-bold text-[12px] sm:text-[13px] text-ks-ink">{client.contact_name}</p>
-          <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.contact_email}</p>
+      {/* Client info — stat bar (view) or edit form */}
+      {editing && editForm ? (
+        <div className="bg-white border border-ks-rule mb-8 p-6">
+          <MicroLabel className="block mb-5">Edit Client</MicroLabel>
+
+          {saveError && (
+            <div className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200 px-4 py-3">
+              <span className="text-red-500 text-[13px] mt-px">✕</span>
+              <p className="font-body text-[12px] text-red-700">{saveError}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            {([
+              ['company_name', 'Company Name'],
+              ['industry', 'Industry'],
+              ['contact_name', 'Contact Name'],
+              ['contact_email', 'Contact Email'],
+              ['contact_phone', 'Contact Phone'],
+              ['address_line1', 'Address Line 1'],
+              ['address_line2', 'Address Line 2'],
+              ['city', 'City'],
+              ['province', 'Province'],
+              ['country', 'Country'],
+              ['registration_number', 'Reg. No.'],
+              ['vat_number', 'VAT No.'],
+            ] as [keyof EditForm, string][]).map(([key, label]) => (
+              <div key={key} className="flex flex-col gap-1">
+                <label className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver">{label}</label>
+                <input
+                  type={key === 'contact_email' ? 'email' : 'text'}
+                  value={(editForm[key] as string) ?? ''}
+                  onChange={field(key)}
+                  className="bg-ks-smoke border border-ks-rule text-ks-ink font-body text-[13px] px-3 py-2.5 rounded-ks focus:outline-none focus:border-ks-lava transition-colors"
+                />
+              </div>
+            ))}
+
+            <div className="flex flex-col gap-1">
+              <label className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver">Status</label>
+              <select
+                value={editForm.status}
+                onChange={field('status')}
+                className="bg-ks-smoke border border-ks-rule text-ks-ink font-body text-[13px] px-3 py-2.5 rounded-ks focus:outline-none focus:border-ks-lava transition-colors"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 mb-6">
+            <label className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver">Notes</label>
+            <textarea
+              value={editForm.notes ?? ''}
+              onChange={field('notes')}
+              rows={3}
+              className="bg-ks-smoke border border-ks-rule text-ks-ink font-body text-[13px] px-3 py-2.5 rounded-ks focus:outline-none focus:border-ks-lava transition-colors resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={cancelEdit} disabled={saving}>Cancel</Button>
+            <Button variant="orange" onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</Button>
+          </div>
         </div>
-        <div className="p-4 sm:p-5 border-b sm:border-b-0 sm:border-r border-ks-rule sm:flex-1">
-          <MicroLabel color="silver" className="block mb-1">Location</MicroLabel>
-          <p className="font-body text-[12px] text-ks-slate">{client.city}, {client.province}</p>
-          <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.address_line1}</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:flex border border-ks-rule mb-8" style={{ backgroundColor: '#E8E5E0' }}>
+          <div className="p-4 sm:p-5 border-r border-b sm:border-b-0 border-ks-rule sm:flex-1">
+            <MicroLabel color="silver" className="block mb-1">Contact</MicroLabel>
+            <p className="font-display font-bold text-[12px] sm:text-[13px] text-ks-ink">{client.contact_name}</p>
+            <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.contact_email}</p>
+          </div>
+          <div className="p-4 sm:p-5 border-b sm:border-b-0 sm:border-r border-ks-rule sm:flex-1">
+            <MicroLabel color="silver" className="block mb-1">Location</MicroLabel>
+            <p className="font-body text-[12px] text-ks-slate">{client.city}, {client.province}</p>
+            <p className="font-body text-[10px] sm:text-[11px] text-ks-silver truncate">{client.address_line1}</p>
+          </div>
+          <div className="p-4 sm:p-5 border-r border-ks-rule sm:flex-1">
+            <MicroLabel color="silver" className="block mb-1">Reg. No.</MicroLabel>
+            <p className="font-body text-[12px] text-ks-slate">{client.registration_number ?? '—'}</p>
+          </div>
+          <div className="p-4 sm:p-5 sm:flex-1">
+            <MicroLabel color="silver" className="block mb-1">VAT No.</MicroLabel>
+            <p className="font-body text-[12px] text-ks-slate">{client.vat_number ?? '—'}</p>
+          </div>
         </div>
-        <div className="p-4 sm:p-5 border-r border-ks-rule sm:flex-1">
-          <MicroLabel color="silver" className="block mb-1">Reg. No.</MicroLabel>
-          <p className="font-body text-[12px] text-ks-slate">{client.registration_number ?? '—'}</p>
-        </div>
-        <div className="p-4 sm:p-5 sm:flex-1">
-          <MicroLabel color="silver" className="block mb-1">VAT No.</MicroLabel>
-          <p className="font-body text-[12px] text-ks-slate">{client.vat_number ?? '—'}</p>
-        </div>
-      </div>
+      )}
 
       {/* Documents */}
       <div>
