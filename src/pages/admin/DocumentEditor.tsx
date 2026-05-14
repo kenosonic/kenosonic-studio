@@ -47,7 +47,9 @@ export default function DocumentEditor() {
     setSendSuccess(false)
     try {
       await sendDocument(document.id)
-      setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
+      if (document.status === 'draft') {
+        setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
+      }
       setSendSuccess(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -104,6 +106,11 @@ export default function DocumentEditor() {
           {document.status === 'draft' && (
             <Button variant="orange" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Sending…' : 'Send to Client'}
+            </Button>
+          )}
+          {document.status !== 'draft' && (
+            <Button variant="outline" size="sm" onClick={handleSend} disabled={sending}>
+              {sending ? 'Resending…' : 'Resend'}
             </Button>
           )}
           {NEXT_STATUS[document.status] && (
