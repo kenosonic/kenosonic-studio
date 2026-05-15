@@ -40,7 +40,15 @@ export function useClient(id: string | undefined) {
   return { client, setClient, loading, error }
 }
 
-export async function updateClient(id: string, data: Partial<Omit<Client, 'id' | 'created_at' | 'created_by'>>) {
+type ClientUpdate = Omit<Partial<Client>, 'id' | 'created_at' | 'created_by' | 'address_line2' | 'registration_number' | 'vat_number' | 'notes' | 'logo_url'> & {
+  address_line2?: string | null
+  registration_number?: string | null
+  vat_number?: string | null
+  notes?: string | null
+  logo_url?: string | null
+}
+
+export async function updateClient(id: string, data: ClientUpdate) {
   const { error } = await supabase.from('clients').update(data).eq('id', id)
   if (error) throw error
 }
