@@ -110,19 +110,21 @@ export default function DocumentEditor() {
 
   return (
     <div className="px-4 sm:px-10 py-6 sm:py-10">
-      {/* Breadcrumb + meta */}
-      <div className="flex items-start justify-between mb-6 gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
+      {/* Breadcrumb + meta — full width on mobile, flex row on desktop */}
+      <div className="mb-6 sm:flex sm:items-start sm:justify-between sm:gap-4">
+
+        {/* Meta block */}
+        <div className="mb-4 sm:mb-0 min-w-0">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             {client && (
               <>
-                <Link to={`/admin/clients/${client.id}`} className="font-body text-[11px] text-ks-silver hover:text-ks-lava">{client.company_name}</Link>
+                <Link to={`/admin/clients/${client.id}`} className="font-body text-[11px] text-ks-silver hover:text-ks-lava truncate max-w-[160px] sm:max-w-none">{client.company_name}</Link>
                 <span className="text-ks-silver text-[11px]">/</span>
               </>
             )}
             <span className="font-body text-[11px] text-ks-ink">{document.reference_number}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MicroLabel>{document.type}</MicroLabel>
             <span className={`font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-ks ${STATUS_COLORS[document.status]}`}>
               {document.status}
@@ -130,7 +132,8 @@ export default function DocumentEditor() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Action buttons */}
+        <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
           {document.type === 'questionnaire' && document.status === 'completed' && (
             <Button variant={isLocked ? 'outline' : 'dark'} size="sm" onClick={handleToggleLock} disabled={locking}>
               {locking ? 'Updating…' : isLocked ? 'Unlock Brief' : 'Lock Brief'}
@@ -151,24 +154,40 @@ export default function DocumentEditor() {
               {updating ? 'Updating…' : `Mark as ${NEXT_STATUS[document.status]}`}
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={handleArchive} disabled={archiving}>
-            {archiving ? '…' : document.archived ? 'Unarchive' : 'Archive'}
+
+          {/* Archive — icon on mobile, text on desktop */}
+          <Button variant="outline" size="sm" onClick={handleArchive} disabled={archiving} title={document.archived ? 'Unarchive' : 'Archive'}>
+            <span className="sm:hidden">
+              {archiving ? (
+                <span className="text-[11px]">…</span>
+              ) : document.archived ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              )}
+            </span>
+            <span className="hidden sm:inline">{archiving ? '…' : document.archived ? 'Unarchive' : 'Archive'}</span>
           </Button>
+
+          {/* Delete — icon on mobile, text on desktop (draft only) */}
           {document.status === 'draft' && !document.archived && !confirmDelete && (
-            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(true)}>
-              Delete
+            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(true)} title="Delete">
+              <span className="sm:hidden">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </span>
+              <span className="hidden sm:inline">Delete</span>
             </Button>
           )}
           {confirmDelete && (
             <div className="flex items-center gap-2">
-              <span className="font-body text-[11px] text-ks-silver">Sure?</span>
+              <span className="font-body text-[11px] text-ks-silver hidden sm:inline">Sure?</span>
               <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>No</Button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-1.5 rounded-ks bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
               >
-                {deleting ? 'Deleting…' : 'Yes, Delete'}
+                {deleting ? '…' : 'Delete'}
               </button>
             </div>
           )}
