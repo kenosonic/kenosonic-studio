@@ -113,13 +113,47 @@ export interface ContractContent {
   terms: string
 }
 
+export type ReportSectionType = 'text' | 'grid' | 'callout' | 'table' | 'stat_tiles' | 'bar_chart' | 'image'
+
+export interface ReportStat {
+  id: string
+  label: string
+  value: string
+  change?: string
+  up?: boolean
+}
+
+export interface ReportBar {
+  id: string
+  label: string
+  value: number    // 0–100, controls CSS bar fill width
+  display?: string // text shown on right (defaults to `${value}%`)
+}
+
+export interface ReportTableRow {
+  id: string
+  cells: string[]
+}
+
 export interface ReportSection {
   id: string
   micro: string
   heading: string
-  type: 'text' | 'grid' | 'callout'
+  type: ReportSectionType
+  // text / callout
   body?: string
+  // grid
   items?: Array<{ id: string; t: string; b: string }>
+  // table
+  columns?: string[]
+  rows?: ReportTableRow[]
+  // stat_tiles
+  stats?: ReportStat[]
+  // bar_chart
+  bars?: ReportBar[]
+  // image
+  image_url?: string
+  image_caption?: string
 }
 
 export interface ReportContent {
