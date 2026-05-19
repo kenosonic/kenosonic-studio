@@ -44,7 +44,7 @@ export default function Invite() {
       // Re-fetch invite (must still be valid)
       const { data: invite } = await supabase
         .from('invites')
-        .select('id, client_id, used_at')
+        .select('id, client_id, used_at, return_to')
         .eq('token', token!)
         .single()
 
@@ -70,7 +70,7 @@ export default function Invite() {
         .update({ used_at: new Date().toISOString(), used_by: user!.id })
         .eq('id', invite.id)
 
-      navigate('/portal', { replace: true })
+      navigate(invite.return_to ?? '/portal', { replace: true })
     } catch {
       setStage('error')
       setErrorMsg('Something went wrong. Please contact Keno Sonic.')

@@ -695,9 +695,6 @@ export default function ClientDetail() {
           <h2 className="font-display font-bold text-[22px] sm:text-[26px] tracking-[-0.02em] text-ks-ink mt-1 truncate">{client.company_name}</h2>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <Button variant="outline" size="sm" onClick={handleSendInvite} disabled={sendingInvite}>
-            {sendingInvite ? 'Sending…' : inviteSent ? 'Invite Sent ✓' : 'Send Invite'}
-          </Button>
           {!editing && (
             <Button variant="outline" size="sm" onClick={startEdit}>Edit</Button>
           )}
@@ -768,12 +765,19 @@ export default function ClientDetail() {
         </div>
       </div>
 
-      {/* Invite feedback */}
-      {inviteError && (
-        <div className="bg-red-50 border border-red-200 px-5 py-3 mb-6">
-          <p className="font-body text-[11px] text-red-600">{inviteError}</p>
-        </div>
-      )}
+      {/* Standalone invite — escape hatch below stat bar */}
+      <div className="flex items-center gap-3 mb-3">
+        <button
+          onClick={handleSendInvite}
+          disabled={sendingInvite}
+          className="font-body text-[10px] text-ks-silver hover:text-ks-lava transition-colors disabled:opacity-50"
+        >
+          {sendingInvite ? 'Sending…' : inviteSent ? '✓ Standalone invite sent' : 'Send standalone portal invite'}
+        </button>
+        {inviteError && (
+          <span className="font-body text-[10px] text-red-500">{inviteError}</span>
+        )}
+      </div>
 
       {/* Client info — stat bar (view) or edit form */}
       {editing && editForm ? (

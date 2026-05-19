@@ -68,10 +68,9 @@ function ksFooter() {
     </div>`
 }
 
-function docSendHtml(client: Record<string, string>, doc: Record<string, unknown>): string {
+function docSendHtml(client: Record<string, string>, doc: Record<string, unknown>, ctaUrl: string): string {
   const typeLabel = DOC_TYPE_LABELS[doc.type as string] ?? String(doc.type)
   const isForm = IS_FORM_DOC[doc.type as string] ?? false
-  const portalUrl = `${SITE_URL}/portal/documents/${doc.id}`
   const heading = isForm ? `Please fill in your ${typeLabel}` : 'You have a new document'
   const body = isForm
     ? `Kenosonic Interactive has sent you a <strong>${typeLabel}</strong> to complete. It only takes a few minutes — click the button below to get started.`
@@ -94,7 +93,7 @@ function docSendHtml(client: Record<string, string>, doc: Record<string, unknown
       <p style="font-size:15px;font-weight:700;color:#0D0D0D;margin:0 0 4px;">${doc.title}</p>
       <p style="font-size:11px;color:#9A9A9A;margin:0;">Ref: ${doc.reference_number}</p>
     </div>
-    <a href="${portalUrl}"
+    <a href="${ctaUrl}"
        style="display:block;background:#F56E0F;color:#fff;text-decoration:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;text-align:center;padding:16px 32px;border-radius:4px;letter-spacing:0.02em;">
       ${ctaLabel}
     </a>
@@ -258,12 +257,36 @@ serve(async (req) => {
     // ── action: send ──────────────────────────────────────────────────────────
     if (action === 'send') {
       const isEmailDoc = doc.type === 'email'
+
+      // For non-email docs, check whether this client already has portal access.
+      // If not, create an invite token so the document email doubles as their
+      // first-time sign-in link.
+      let ctaUrl = `${SITE_URL}/portal/documents/${doc.id}`
+      if (!isEmailDoc) {
+        const { data: existingProfile } = await db
+          .from('profiles')
+          .select('id')
+          .eq('client_id', doc.client_id)
+          .maybeSingle()
+
+        if (!existingProfile) {
+          const token = crypto.randomUUID()
+          await db.from('invites').insert({
+            client_id: doc.client_id,
+            token,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            return_to: `/portal/documents/${doc.id}`,
+          })
+          ctaUrl = `${SITE_URL}/invite/${token}`
+        }
+      }
+
       const subject = isEmailDoc
         ? (doc.content as Record<string, string>).subject ?? doc.title
         : `${DOC_TYPE_LABELS[doc.type] ?? doc.type} from Kenosonic Interactive — ${doc.reference_number}`
       const html = isEmailDoc
         ? emailDocHtml(client, doc)
-        : docSendHtml(client, doc)
+        : docSendHtml(client, doc, ctaUrl)
 
       await sendEmail(client.contact_email, subject, html)
 
