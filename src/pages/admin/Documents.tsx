@@ -7,7 +7,8 @@ import { useState } from 'react'
 const ALL_TYPES: Array<DocumentType | 'all'> = ['all', 'invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding']
 
 export default function Documents() {
-  const { documents, loading, error } = useDocuments()
+  const [showArchived, setShowArchived] = useState(false)
+  const { documents, loading, error } = useDocuments(undefined, showArchived)
   const [typeFilter, setTypeFilter] = useState<DocumentType | 'all'>('all')
 
   const filtered = typeFilter === 'all' ? documents : documents.filter(d => d.type === typeFilter)
@@ -22,18 +23,28 @@ export default function Documents() {
       </div>
 
       {/* Filter tabs — scroll horizontally on mobile */}
-      <div className="flex gap-2 flex-nowrap overflow-x-auto pb-2 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
-        {ALL_TYPES.map(t => (
-          <button
-            key={t}
-            onClick={() => setTypeFilter(t)}
-            className={`flex-shrink-0 font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-1.5 rounded-ks transition-colors ${
-              typeFilter === t ? 'bg-ks-void text-white' : 'bg-white border border-ks-rule text-ks-silver hover:border-ks-ink hover:text-ks-ink'
-            }`}
-          >
-            {t === 'all' ? 'All' : DOC_TYPE_LABELS[t]}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <div className="flex gap-2 flex-nowrap overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
+          {ALL_TYPES.map(t => (
+            <button
+              key={t}
+              onClick={() => setTypeFilter(t)}
+              className={`flex-shrink-0 font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-1.5 rounded-ks transition-colors ${
+                typeFilter === t ? 'bg-ks-void text-white' : 'bg-white border border-ks-rule text-ks-silver hover:border-ks-ink hover:text-ks-ink'
+              }`}
+            >
+              {t === 'all' ? 'All' : DOC_TYPE_LABELS[t]}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setShowArchived(v => !v)}
+          className={`flex-shrink-0 font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-1.5 rounded-ks transition-colors ${
+            showArchived ? 'bg-yellow-100 border border-yellow-300 text-yellow-700' : 'bg-white border border-ks-rule text-ks-silver hover:border-ks-ink hover:text-ks-ink'
+          }`}
+        >
+          {showArchived ? 'Hide Archived' : 'Show Archived'}
+        </button>
       </div>
 
       {error && (

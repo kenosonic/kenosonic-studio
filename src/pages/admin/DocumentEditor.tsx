@@ -1,5 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
-import { useDocument, updateDocumentStatus, sendDocument } from '../../hooks/useDocument'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useDocument, updateDocumentStatus, sendDocument, archiveDocument, deleteDocument } from '../../hooks/useDocument'
 import { supabase } from '../../lib/supabase'
 import { MicroLabel, Button } from '../../components/ui'
 import { InvoiceDocument } from '../../components/documents/Invoice/InvoiceDocument'
@@ -22,12 +22,17 @@ const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
 
 export default function DocumentEditor() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { document, loading, error: loadError, setDocument } = useDocument(id)
   const [updating, setUpdating] = useState(false)
   const [sending, setSending] = useState(false)
   const [locking, setLocking] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
   const [sendSuccess, setSendSuccess] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const isLocked = document?.type === 'questionnaire' && (document.content as QuestionnaireContent).locked === true
 
@@ -56,6 +61,34 @@ export default function DocumentEditor() {
       setSendError(msg)
     } finally {
       setSending(false)
+    }
+  }
+
+  async function handleArchive() {
+    if (!document) return
+    setArchiving(true)
+    setActionError(null)
+    try {
+      await archiveDocument(document.id, !document.archived)
+      setDocument(d => d ? { ...d, archived: !d.archived } : d)
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setArchiving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!document) return
+    setDeleting(true)
+    setActionError(null)
+    try {
+      await deleteDocument(document.id)
+      navigate(client ? `/admin/clients/${client.id}` : '/admin/documents', { replace: true })
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : String(err))
+      setDeleting(false)
+      setConfirmDelete(false)
     }
   }
 
@@ -97,26 +130,47 @@ export default function DocumentEditor() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           {document.type === 'questionnaire' && document.status === 'completed' && (
             <Button variant={isLocked ? 'outline' : 'dark'} size="sm" onClick={handleToggleLock} disabled={locking}>
               {locking ? 'Updating…' : isLocked ? 'Unlock Brief' : 'Lock Brief'}
             </Button>
           )}
-          {document.status === 'draft' && (
+          {document.status === 'draft' && !document.archived && (
             <Button variant="orange" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Sending…' : 'Send to Client'}
             </Button>
           )}
-          {document.status !== 'draft' && (
+          {document.status !== 'draft' && !document.archived && (
             <Button variant="outline" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Resending…' : 'Resend'}
             </Button>
           )}
-          {NEXT_STATUS[document.status] && (
+          {NEXT_STATUS[document.status] && !document.archived && (
             <Button variant="dark" size="sm" onClick={handleStatusUpdate} disabled={updating}>
               {updating ? 'Updating…' : `Mark as ${NEXT_STATUS[document.status]}`}
             </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={handleArchive} disabled={archiving}>
+            {archiving ? '…' : document.archived ? 'Unarchive' : 'Archive'}
+          </Button>
+          {document.status === 'draft' && !document.archived && !confirmDelete && (
+            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(true)}>
+              Delete
+            </Button>
+          )}
+          {confirmDelete && (
+            <div className="flex items-center gap-2">
+              <span className="font-body text-[11px] text-ks-silver">Sure?</span>
+              <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>No</Button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-1.5 rounded-ks bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Yes, Delete'}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -135,6 +189,18 @@ export default function DocumentEditor() {
             <p className="font-body font-medium text-[12px] text-red-700">Failed to send document</p>
             <p className="font-body text-[11px] text-red-600 mt-0.5">{sendError}</p>
           </div>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 px-4 py-3">
+          <span className="text-red-500 text-[13px] mt-px">✕</span>
+          <p className="font-body text-[12px] text-red-700">{actionError}</p>
+        </div>
+      )}
+      {document.archived && (
+        <div className="mb-4 flex items-center gap-2 bg-yellow-50 border border-yellow-200 px-4 py-3">
+          <span className="font-body text-[11px] text-yellow-700">This document is archived and hidden from the default view.</span>
         </div>
       )}
 

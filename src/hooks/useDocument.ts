@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import type { KSDocument, DocumentType, DocumentStatus } from '../types'
 import { DOC_TYPE_PREFIX } from '../types'
 
-export function useDocuments(clientId?: string) {
+export function useDocuments(clientId?: string, showArchived = false) {
   const [documents, setDocuments] = useState<KSDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -16,11 +16,12 @@ export function useDocuments(clientId?: string) {
       .select('*, client:clients(company_name, contact_name)')
       .order('created_at', { ascending: false })
     if (clientId) query = query.eq('client_id', clientId)
+    if (!showArchived) query = query.eq('archived', false)
     const { data, error: fetchError } = await query
     if (fetchError) setError(fetchError.message)
     setDocuments(data ?? [])
     setLoading(false)
-  }, [clientId])
+  }, [clientId, showArchived])
 
   useEffect(() => { fetchDocuments() }, [fetchDocuments])
 
@@ -129,4 +130,20 @@ export async function notifyDocumentAction(documentId: string, notification_type
   supabase.functions.invoke('send-document', {
     body: { action: 'notify', document_id: documentId, notification_type },
   }).catch(console.warn)
+}
+
+export async function archiveDocument(id: string, archive: boolean) {
+  const { error } = await supabase
+    .from('documents')
+    .update({ archived: archive })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteDocument(id: string) {
+  const { error } = await supabase
+    .from('documents')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
 }

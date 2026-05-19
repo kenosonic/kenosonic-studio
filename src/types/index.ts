@@ -54,6 +54,7 @@ export interface KSDocument {
   approved_at?: string
   signed_at?: string
   completed_at?: string
+  archived: boolean
   created_by: string
   client?: Client
 }
