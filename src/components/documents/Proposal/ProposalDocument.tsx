@@ -24,6 +24,78 @@ const SCOPE_LABELS: Partial<Record<ServiceType, [string, string, string]>> = {
   bpa:               ['Process Mapping',           'Automation Build',             'Testing & Handover'],
 }
 
+// Short noun used in proposal body copy ("your website", "your campaign", etc.)
+const SERVICE_NOUN: Partial<Record<ServiceType, string>> = {
+  web:               'website',
+  digital_marketing: 'digital marketing campaign',
+  brand:             'brand identity package',
+  google_ads:        'Google Ads campaign',
+  social_media:      'social media campaign',
+  seo:               'SEO project',
+  copywriting:       'copywriting package',
+  custom_dev:        'development project',
+  plugins:           'plugin development project',
+  bpa:               'automation project',
+}
+
+function serviceNoun(type?: ServiceType) {
+  return (type && SERVICE_NOUN[type]) ?? 'project'
+}
+
+// What we ask in exchange per service type
+const FOUNDERS_EXCHANGE_DEFAULTS: Partial<Record<ServiceType, string[]>> = {
+  web: [
+    'A detailed testimonial upon project completion',
+    'Permission to showcase this website in our portfolio',
+    'Referrals to anyone you know who needs web or digital services',
+  ],
+  digital_marketing: [
+    'A detailed testimonial and campaign results summary',
+    'Permission to showcase campaign performance in our case studies',
+    'Referrals to anyone who needs digital marketing',
+  ],
+  brand: [
+    'A detailed testimonial upon project completion',
+    'Permission to showcase your brand identity in our portfolio',
+    'Referrals to anyone who needs branding or design services',
+  ],
+  google_ads: [
+    'A detailed testimonial and performance case study',
+    'Permission to showcase campaign results in our portfolio',
+    'Referrals to anyone who needs Google Ads management',
+  ],
+  social_media: [
+    'A detailed testimonial and campaign summary',
+    'Permission to showcase campaign results in our portfolio',
+    'Referrals to anyone who needs social media advertising',
+  ],
+  seo: [
+    'A detailed testimonial and before/after rankings case study',
+    'Permission to share SEO improvements in our portfolio',
+    'Referrals to anyone who needs SEO services',
+  ],
+  copywriting: [
+    'A detailed testimonial upon project completion',
+    'Permission to showcase writing samples in our portfolio',
+    'Referrals to anyone who needs copywriting or content strategy',
+  ],
+  custom_dev: [
+    'A detailed testimonial upon project completion',
+    'Permission to showcase this project in our portfolio',
+    'Referrals to anyone who needs custom development work',
+  ],
+  plugins: [
+    'A detailed testimonial upon project completion',
+    'Permission to showcase this plugin in our case studies',
+    'Referrals to anyone who needs plugin or integration development',
+  ],
+  bpa: [
+    'A detailed testimonial and automation case study',
+    'Permission to showcase this workflow in our portfolio',
+    'Referrals to anyone who needs business process automation',
+  ],
+}
+
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 
@@ -175,11 +247,9 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
     total_timeline: raw.total_timeline ?? 'Approximately 4 weeks from content delivery to launch',
     line_items: arr(raw.line_items, defaultLineItems),
     founders_mode: raw.founders_mode ?? false,
-    founders_exchange: arr(raw.founders_exchange, [
-      'A detailed testimonial upon project completion',
-      'Permission to showcase this website in our portfolio',
-      'Referrals to anyone you know who needs web services',
-    ]),
+    founders_exchange: arr(raw.founders_exchange,
+      FOUNDERS_EXCHANGE_DEFAULTS[raw.service_type ?? 'web'] ?? FOUNDERS_EXCHANGE_DEFAULTS.web!
+    ),
     client_costs: arr(raw.client_costs, [
       { id: crypto.randomUUID(), title: 'Domain name registration', cost: '~R150–300/year' },
       { id: crypto.randomUUID(), title: 'Web hosting', cost: '~R50–150/month' },
@@ -282,7 +352,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
           {content.founders_mode && (
             <div style={{ backgroundColor: '#FFF7F0', border: '1px solid #F56E0F', padding: '10px 16px', alignSelf: 'flex-start' }}>
               <p style={{ fontSize: '9px', color: '#F56E0F', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Founder's Promotion</p>
-              <p style={{ fontSize: '11px', color: '#3A3A3A', marginTop: '2px' }}>Complimentary Portfolio Project</p>
+              <p style={{ fontSize: '11px', color: '#3A3A3A', marginTop: '2px' }}>Complimentary {content.service_type ? SERVICE_LABELS[content.service_type] : 'Project'}</p>
             </div>
           )}
         </div>
@@ -291,7 +361,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={{ marginBottom: '0' }}>
           <span style={micro}>Project Overview</span>
           <p style={body}>
-            Thank you for the opportunity to work on your project. Based on our discovery conversation, I understand that you need a professional website to{' '}
+            Thank you for the opportunity to work on your project. Based on our discovery conversation, I understand that you need a professional {serviceNoun(content.service_type)} to{' '}
             {readonly ? (
               <strong style={{ color: '#0D0D0D' }}>{content.primary_goal}</strong>
             ) : (
@@ -301,7 +371,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
             )}.
           </p>
           <p style={{ ...body, marginTop: '10px' }}>
-            This proposal outlines the scope of work, timeline, investment, and terms for your website development project.
+            This proposal outlines the scope of work, timeline, investment, and terms for your {content.service_type ? SERVICE_LABELS[content.service_type] : 'project'}.
           </p>
         </div>
 
@@ -490,7 +560,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
           {content.founders_mode && (
             <div style={{ marginTop: '24px', backgroundColor: '#FFF7F0', border: '1px solid #F56E0F', padding: '20px 24px' }}>
               <p style={{ ...sectionH, color: '#F56E0F', marginBottom: '10px' }}>Why Are We Offering This for Free?</p>
-              <p style={{ ...body, marginBottom: '12px' }}>We're building our portfolio and refining our processes. In exchange for this complimentary website, we ask for:</p>
+              <p style={{ ...body, marginBottom: '12px' }}>We're building our portfolio and refining our processes. In exchange for this complimentary {serviceNoun(content.service_type)}, we ask for:</p>
               <BulletList items={content.founders_exchange} onChange={v => setField('founders_exchange', v)} readonly={readonly} />
             </div>
           )}
