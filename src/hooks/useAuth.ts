@@ -31,9 +31,17 @@ export function useAuth() {
   }
 
   async function signInWithGoogle(redirectTo?: string) {
+    const target = redirectTo ?? window.location.origin
+    // DEBUG — open browser console to read these before the redirect
+    console.group('[Auth Debug]')
+    console.log('Supabase URL :', import.meta.env.VITE_SUPABASE_URL)
+    console.log('redirectTo   :', target)
+    console.log('Expected callback registered in Google Cloud Console:',
+      `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+    console.groupEnd()
     return supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: redirectTo ?? window.location.origin },
+      options: { redirectTo: target },
     })
   }
 
