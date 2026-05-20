@@ -551,16 +551,20 @@ export default function ClientDetail() {
     setCreating(true)
     setShowDocMenu(false)
     setShowProposalSub(false)
-    const content = getProposalContent(serviceType)
-    const doc = await createDocument(
-      client.id,
-      'proposal',
-      `Proposal — ${client.company_name}`,
-      content as unknown as Record<string, unknown>,
-      user.id,
-    )
-    setCreating(false)
-    navigate(`/admin/documents/${doc.id}`)
+    try {
+      const content = getProposalContent(serviceType)
+      const doc = await createDocument(
+        client.id,
+        'proposal',
+        `Proposal — ${client.company_name}`,
+        content as unknown as Record<string, unknown>,
+        user.id,
+      )
+      navigate(`/admin/documents/${doc.id}`)
+    } catch (err) {
+      console.error('Failed to create proposal:', err)
+      setCreating(false)
+    }
   }
 
   async function handleCreateAudit(serviceType: ServiceType) {
@@ -568,16 +572,20 @@ export default function ClientDetail() {
     setCreating(true)
     setShowDocMenu(false)
     setShowAuditSub(false)
-    const content: AuditContent = { service_type: serviceType, tools_used: [], sections: [], summary: '' }
-    const doc = await createDocument(
-      client.id,
-      'audit',
-      `Audit Report — ${client.company_name}`,
-      content as unknown as Record<string, unknown>,
-      user.id,
-    )
-    setCreating(false)
-    navigate(`/admin/documents/${doc.id}`)
+    try {
+      const content: AuditContent = { service_type: serviceType, tools_used: [], sections: [], summary: '' }
+      const doc = await createDocument(
+        client.id,
+        'audit',
+        `Audit Report — ${client.company_name}`,
+        content as unknown as Record<string, unknown>,
+        user.id,
+      )
+      navigate(`/admin/documents/${doc.id}`)
+    } catch (err) {
+      console.error('Failed to create audit:', err)
+      setCreating(false)
+    }
   }
 
   async function handleCreateDoc(type: DocumentType) {
@@ -665,15 +673,19 @@ export default function ClientDetail() {
       },
     }
 
-    const doc = await createDocument(
-      client.id,
-      type,
-      `${DOC_TYPE_LABELS[type]} — ${client.company_name}`,
-      defaultContent[type as keyof typeof defaultContent],
-      user.id,
-    )
-    setCreating(false)
-    navigate(`/admin/documents/${doc.id}`)
+    try {
+      const doc = await createDocument(
+        client.id,
+        type,
+        `${DOC_TYPE_LABELS[type]} — ${client.company_name}`,
+        defaultContent[type as keyof typeof defaultContent],
+        user.id,
+      )
+      navigate(`/admin/documents/${doc.id}`)
+    } catch (err) {
+      console.error('Failed to create document:', err)
+      setCreating(false)
+    }
   }
 
   if (loading) return <div className="px-4 sm:px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
