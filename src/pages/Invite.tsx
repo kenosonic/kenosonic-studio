@@ -19,7 +19,7 @@ export default function Invite() {
   useEffect(() => {
     if (!token) { setStage('error'); setErrorMsg('Invalid invite link.'); return }
     supabase
-      .from('invites')
+      .from('ks_invites')
       .select('id, expires_at, used_at')
       .eq('token', token)
       .single()
@@ -43,7 +43,7 @@ export default function Invite() {
     try {
       // Re-fetch invite (must still be valid)
       const { data: invite } = await supabase
-        .from('invites')
+        .from('ks_invites')
         .select('id, client_id, used_at, return_to')
         .eq('token', token!)
         .single()
@@ -59,14 +59,14 @@ export default function Invite() {
         .from('profiles')
         .upsert({
           id: user!.id,
-          role: 'client',
-          client_id: invite.client_id,
+          studio_role: 'client',
+          ks_client_id: invite.client_id,
           full_name: user!.user_metadata?.full_name ?? user!.email ?? '',
         })
 
       // Consume the invite
       await supabase
-        .from('invites')
+        .from('ks_invites')
         .update({ used_at: new Date().toISOString(), used_by: user!.id })
         .eq('id', invite.id)
 

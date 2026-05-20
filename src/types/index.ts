@@ -9,6 +9,7 @@ export interface Client {
   id: string
   created_at: string
   created_by: string
+  crm_lead_id?: string
   company_name: string
   contact_name: string
   contact_email: string
@@ -70,9 +71,24 @@ export interface DocumentSignature {
 
 export interface Profile {
   id: string
-  role: UserRole
-  client_id?: string
+  studio_role: UserRole
+  ks_client_id?: string
   full_name: string
+}
+
+export interface CrmLead {
+  id: string
+  company_name: string
+  contact_name: string
+  contact_email: string
+  contact_phone?: string
+  industry?: string
+  website?: string
+  address?: string
+  notes?: string
+  sales_stage?: string
+  service_interest?: string[]
+  created_at: string
 }
 
 // Document content schemas

@@ -13,7 +13,7 @@ export function useDocuments(clientId?: string, showArchived = false) {
     setError(null)
     let query = supabase
       .from('documents')
-      .select('*, client:clients(company_name, contact_name)')
+      .select('*, client:ks_clients(company_name, contact_name)')
       .order('created_at', { ascending: false })
     if (clientId) query = query.eq('client_id', clientId)
     if (!showArchived) query = query.eq('archived', false)
@@ -37,7 +37,7 @@ export function useDocument(id: string | undefined) {
     if (!id) { setLoading(false); return }
     supabase
       .from('documents')
-      .select('*, client:clients(*)')
+      .select('*, client:ks_clients(*)')
       .eq('id', id)
       .single()
       .then(({ data, error: fetchError }) => {

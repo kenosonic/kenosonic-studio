@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Client, WizardData } from '../types'
+import type { Client, CrmLead, WizardData } from '../types'
 
 export function useClients() {
   const [clients, setClients] = useState<Client[]>([])
@@ -10,7 +10,7 @@ export function useClients() {
   const fetchClients = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase
-      .from('clients')
+      .from('ks_clients')
       .select('*')
       .order('created_at', { ascending: false })
     if (error) setError(error.message)
@@ -30,7 +30,7 @@ export function useClient(id: string | undefined) {
 
   useEffect(() => {
     if (!id) { setLoading(false); return }
-    supabase.from('clients').select('*').eq('id', id).single().then(({ data, error }) => {
+    supabase.from('ks_clients').select('*').eq('id', id).single().then(({ data, error }) => {
       if (error) setError(error.message)
       else setClient(data)
       setLoading(false)
@@ -38,6 +38,23 @@ export function useClient(id: string | undefined) {
   }, [id])
 
   return { client, setClient, loading, error }
+}
+
+export function useCrmLeads() {
+  const [leads, setLeads] = useState<CrmLead[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('ks_available_leads')
+      .select('*')
+      .then(({ data }) => {
+        setLeads((data as CrmLead[]) ?? [])
+        setLoading(false)
+      })
+  }, [])
+
+  return { leads, loading }
 }
 
 type ClientUpdate = Omit<Partial<Client>, 'id' | 'created_at' | 'created_by' | 'address_line2' | 'registration_number' | 'vat_number' | 'notes' | 'logo_url'> & {
@@ -49,12 +66,12 @@ type ClientUpdate = Omit<Partial<Client>, 'id' | 'created_at' | 'created_by' | '
 }
 
 export async function updateClient(id: string, data: ClientUpdate) {
-  const { error } = await supabase.from('clients').update(data).eq('id', id)
+  const { error } = await supabase.from('ks_clients').update(data).eq('id', id)
   if (error) throw error
 }
 
-export async function createClient(data: WizardData, userId: string) {
-  const { data: client, error } = await supabase.from('clients').insert({
+export async function createClient(data: WizardData, userId: string, crmLeadId?: string) {
+  const { data: client, error } = await supabase.from('ks_clients').insert({
     company_name: data.company_name,
     contact_name: data.contact_name,
     contact_email: data.contact_email,
@@ -70,6 +87,7 @@ export async function createClient(data: WizardData, userId: string) {
     notes: data.notes || null,
     status: 'active',
     created_by: userId,
+    crm_lead_id: crmLeadId ?? null,
   }).select().single()
 
   if (error) throw error
@@ -78,7 +96,7 @@ export async function createClient(data: WizardData, userId: string) {
 
 export async function createProject(clientId: string, data: Pick<WizardData, 'project_name' | 'service_type' | 'project_value'>) {
   if (!data.project_name || !data.service_type) return null
-  const { data: project, error } = await supabase.from('projects').insert({
+  const { data: project, error } = await supabase.from('ks_projects').insert({
     client_id: clientId,
     name: data.project_name,
     service_type: data.service_type,

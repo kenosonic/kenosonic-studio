@@ -23,8 +23,8 @@ export function ProtectedRoute({ children, requiredRole }: Props) {
   // Authenticated but no profile yet — not linked via invite
   if (!profile) return <Navigate to="/not-authorized" replace />
 
-  if (requiredRole && profile.role !== requiredRole) {
-    return <Navigate to={profile.role === 'admin' ? '/admin' : '/portal'} replace />
+  if (requiredRole && profile.studio_role !== requiredRole) {
+    return <Navigate to={profile.studio_role === 'admin' ? '/admin' : '/portal'} replace />
   }
 
   return <>{children}</>

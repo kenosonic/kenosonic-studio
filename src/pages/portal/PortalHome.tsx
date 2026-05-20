@@ -7,7 +7,7 @@ import { DOC_TYPE_LABELS, STATUS_COLORS } from '../../types'
 export default function PortalHome() {
   const { profile, loading: authLoading } = useAuth()
   const { documents, loading: docsLoading, error } = useDocuments(
-    authLoading ? undefined : profile?.client_id
+    authLoading ? undefined : profile?.ks_client_id
   )
   const loading = authLoading || docsLoading
 

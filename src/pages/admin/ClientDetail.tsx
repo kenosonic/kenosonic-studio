@@ -528,7 +528,7 @@ export default function ClientDetail() {
     setInviteSent(false)
     try {
       const { data, error } = await supabase
-        .from('invites')
+        .from('ks_invites')
         .insert({ client_id: client.id })
         .select('token')
         .single()
