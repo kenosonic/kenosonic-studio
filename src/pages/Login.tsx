@@ -13,7 +13,7 @@ export default function Login() {
   useEffect(() => {
     if (loading) return
     if (profile) {
-      navigate(profile.role === 'admin' ? '/admin' : '/portal', { replace: true })
+      navigate(profile.studio_role === 'admin' ? '/admin' : '/portal', { replace: true })
     } else if (user) {
       navigate('/not-authorized', { replace: true })
     }
