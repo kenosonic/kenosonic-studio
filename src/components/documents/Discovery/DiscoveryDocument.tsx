@@ -123,7 +123,7 @@ export function DiscoveryDocument({ document, client }: Props) {
     thirdPartyIntegrations: raw.thirdPartyIntegrations ?? [],
   }))
   const [saving, setSaving] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
     clearTimeout(timer.current)
