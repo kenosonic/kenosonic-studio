@@ -96,8 +96,41 @@
 .spec-markdown th { background: #F8F6F3; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9A9A9A; }
 .spec-markdown strong { font-weight: 600; color: #0D0D0D; }
 
+@page {
+  size: A4 portrait;
+  margin: 15mm;
+}
+
 @media print {
   body { background: white !important; padding: 0 !important; }
   .no-print { display: none !important; }
   [contenteditable="true"] { border-bottom: none !important; background: transparent !important; }
+
+  /* DocumentShell root */
+  #document-content {
+    min-height: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Section page-break utilities */
+  .print-break {
+    break-before: page;
+    page-break-before: always;
+  }
+  .print-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Keep table rows together */
+  tr { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Prevent orphaned headings */
+  h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+
+  /* Spec markdown: each h2 starts a new page */
+  .spec-markdown h2 { break-before: page; page-break-before: always; }
+  .spec-markdown h2:first-child { break-before: auto; page-break-before: auto; }
 }

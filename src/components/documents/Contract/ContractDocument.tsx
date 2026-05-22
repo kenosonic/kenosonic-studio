@@ -102,7 +102,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         </div>
 
         {/* Preamble */}
-        <div style={{ marginBottom: '36px' }}>
+        <div className="print-break" style={{ marginBottom: '36px' }}>
           <span style={microLabel}>Preamble</span>
           {readonly ? (
             <p style={bodyText}>{content.intro}</p>
@@ -114,7 +114,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Clauses */}
-        <div style={{ marginBottom: '36px' }}>
+        <div className="print-break" style={{ marginBottom: '36px' }}>
           <span style={microLabel}>Terms of Service</span>
           {content.sections.map((section, idx) => (
             <div key={section.id} style={{ marginBottom: '24px' }}>
@@ -144,7 +144,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Deliverables */}
-        <div style={{ marginBottom: '36px' }}>
+        <div className="print-break" style={{ marginBottom: '36px' }}>
           <span style={microLabel}>Deliverables</span>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {content.deliverables.map((d, i) => (
@@ -169,7 +169,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Timeline */}
-        <div style={{ marginBottom: '36px' }}>
+        <div className="print-break" style={{ marginBottom: '36px' }}>
           <span style={microLabel}>Project Timeline</span>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -209,7 +209,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Payment */}
-        <div style={{ marginBottom: '36px' }}>
+        <div className="print-break" style={{ marginBottom: '36px' }}>
           <span style={microLabel}>Payment</span>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
@@ -237,7 +237,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Termination */}
-        <div style={{ marginBottom: '40px' }}>
+        <div className="print-break" style={{ marginBottom: '40px' }}>
           <span style={microLabel}>Termination</span>
           {readonly ? (
             <p style={bodyText}>{content.terms}</p>
@@ -249,7 +249,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
         <div style={divider} />
 
         {/* Signature block */}
-        <div>
+        <div className="print-break print-avoid">
           <span style={microLabel}>Signatures</span>
           <div style={{ display: 'flex', gap: '40px', marginTop: '8px' }}>
             <div style={{ flex: 1 }}>

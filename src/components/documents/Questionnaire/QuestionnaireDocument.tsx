@@ -69,7 +69,7 @@ function FileRow({ label, url }: { label: string; url?: string | null }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mb-8">
+    <div className="mb-8 print-break">
       <p className="font-body font-medium text-[9px] uppercase tracking-[0.15em] text-ks-lava mb-3">{title}</p>
       <div className="border border-ks-hairline bg-white px-4">{children}</div>
     </div>

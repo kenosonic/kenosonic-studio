@@ -246,7 +246,7 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
         <div>
           <span style={microLabel}>Audit Findings</span>
           {content.sections.map((section, idx) => (
-            <div key={section.id} style={{ marginBottom: '36px', position: 'relative' }}>
+            <div key={section.id} className="print-break" style={{ marginBottom: '36px', position: 'relative' }}>
               {!readonly && (
                 <button
                   className="no-print absolute -right-4 top-0 bg-ks-void text-white text-[10px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors"
@@ -317,7 +317,7 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
         <div style={divider} />
 
         {/* Summary */}
-        <div>
+        <div className="print-break">
           <span style={microLabel}>Executive Summary</span>
           {readonly ? (
             <p style={bodyText}>{content.summary || '—'}</p>

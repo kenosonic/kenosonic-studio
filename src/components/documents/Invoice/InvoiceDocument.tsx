@@ -81,7 +81,7 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
       <DocumentShell document={document} client={client}>
 
         {/* Client + payment details */}
-        <div style={{ display: 'flex', borderBottom: '0.5px solid #E8E5E0', marginBottom: '40px' }}>
+        <div className="print-avoid" style={{ display: 'flex', borderBottom: '0.5px solid #E8E5E0', marginBottom: '40px' }}>
           <div style={{ flex: 1, paddingRight: '48px', borderRight: '0.5px solid #E8E5E0' }}>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#F56E0F', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '16px' }}>Client Info</p>
             <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', marginBottom: '4px' }}>{client.contact_name}</p>
@@ -164,7 +164,7 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
         )}
 
         {/* Totals */}
-        <div style={{ width: '50%', marginLeft: 'auto', marginTop: '32px', backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '24px' }}>
+        <div className="print-avoid" style={{ width: '50%', marginLeft: 'auto', marginTop: '32px', backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '12px', color: '#3A3A3A' }}>Subtotal</span>
             <span style={{ fontSize: '12px', color: '#3A3A3A' }}>R {fmt(subtotal)}</span>
@@ -181,7 +181,7 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
 
         {/* Notes */}
         {(content.notes || !readonly) && (
-          <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '0.5px solid #E8E5E0' }}>
+          <div className="print-avoid" style={{ marginTop: '40px', paddingTop: '24px', borderTop: '0.5px solid #E8E5E0' }}>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#F56E0F', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '8px' }}>Notes</p>
             {readonly ? (
               <p style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.notes}</p>

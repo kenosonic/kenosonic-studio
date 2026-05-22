@@ -226,7 +226,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
 
         <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', lineHeight: 1.7, color: '#3A3A3A' }}>
           {content.sections.map(section => (
-            <section key={section.id} style={{ marginBottom: '48px', position: 'relative' }}>
+            <section key={section.id} className="print-break" style={{ marginBottom: '48px', position: 'relative' }}>
 
               {/* Remove + type switcher row (edit only) */}
               {!readonly && (

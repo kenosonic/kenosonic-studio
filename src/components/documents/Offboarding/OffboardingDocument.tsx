@@ -117,7 +117,7 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
         <div style={divider} />
 
         {/* Delivered items */}
-        <div style={{ marginBottom: '32px' }}>
+        <div className="print-break" style={{ marginBottom: '32px' }}>
           <span style={microLabel}>Deliverables</span>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -177,7 +177,7 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
         <div style={divider} />
 
         {/* Credentials / Access */}
-        <div style={{ marginBottom: '32px' }}>
+        <div className="print-break" style={{ marginBottom: '32px' }}>
           <span style={microLabel}>Access & Credentials</span>
           {content.credentials.length === 0 && readonly ? (
             <p style={{ ...bodyText, color: '#9A9A9A' }}>No credentials recorded.</p>
@@ -264,7 +264,7 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
         {(content.handover_notes || !readonly) && <div style={divider} />}
 
         {/* Next steps */}
-        <div style={{ marginBottom: '32px' }}>
+        <div className="print-break" style={{ marginBottom: '32px' }}>
           <span style={microLabel}>Your Next Steps</span>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {content.next_steps.map((step, i) => (
@@ -304,7 +304,7 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
         <div style={divider} />
 
         {/* Support terms */}
-        <div style={{ backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '24px' }}>
+        <div className="print-break print-avoid" style={{ backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '24px' }}>
           <span style={microLabel}>Ongoing Support</span>
           {readonly ? (
             <p style={bodyText}>{content.support_terms}</p>

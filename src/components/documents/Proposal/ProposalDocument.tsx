@@ -378,7 +378,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Scope of Work */}
-        <div style={{ marginBottom: '0' }}>
+        <div className="print-break" style={{ marginBottom: '0' }}>
           <span style={micro}>Scope of Work</span>
 
           <p style={{ ...sectionH, color: '#0D0D0D', marginBottom: '12px' }}>What's Included</p>
@@ -425,7 +425,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Client Responsibilities */}
-        <div>
+        <div className="print-break">
           <span style={micro}>Client Responsibilities</span>
           <p style={{ ...body, marginBottom: '12px' }}>To ensure the project stays on schedule, you will need to provide:</p>
           <BulletList items={content.client_responsibilities} onChange={v => setField('client_responsibilities', v)} readonly={readonly} />
@@ -439,7 +439,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Timeline */}
-        <div>
+        <div className="print-break">
           <span style={micro}>Timeline</span>
           <p style={{ ...body, marginBottom: '16px' }}>Assuming content is delivered on time, the project will follow this schedule:</p>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -486,7 +486,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Investment */}
-        <div>
+        <div className="print-break">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <span style={{ ...micro, marginBottom: 0 }}>Investment</span>
             {!readonly && (
@@ -599,7 +599,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Payment Terms */}
-        <div>
+        <div className="print-break">
           <span style={micro}>Payment Terms</span>
           {content.founders_mode ? (
             <div style={{ display: 'flex', gap: '24px' }}>
@@ -630,7 +630,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Terms & Conditions */}
-        <div>
+        <div className="print-break">
           <span style={micro}>Terms & Conditions</span>
           {content.terms.map((term, idx) => (
             <div key={term.id} style={{ marginBottom: '16px' }}>
@@ -658,7 +658,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={hr} />
 
         {/* Next Steps */}
-        <div style={{ marginBottom: '32px' }}>
+        <div className="print-break" style={{ marginBottom: '32px' }}>
           <span style={micro}>Next Steps</span>
           <p style={{ ...body, marginBottom: '12px' }}>To move forward:</p>
           <ol style={{ listStyle: 'none', padding: 0 }}>
