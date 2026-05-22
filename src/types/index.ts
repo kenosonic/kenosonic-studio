@@ -372,6 +372,7 @@ export interface WizardData {
 export interface SpecContent {
   markdown: string
   source_filename?: string
+  version?: string
 }
 
 export const SERVICE_LABELS: Record<ServiceType, string> = {

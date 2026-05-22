@@ -133,4 +133,16 @@
   /* Spec markdown: each h2 starts a new page */
   .spec-markdown h2 { break-before: page; page-break-before: always; }
   .spec-markdown h2:first-child { break-before: auto; page-break-before: auto; }
+
+  /* Spec document book-format pages */
+  [data-spec-page="content"],
+  [data-spec-page="back"] {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+  [data-spec-page] {
+    min-height: 267mm !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
 }

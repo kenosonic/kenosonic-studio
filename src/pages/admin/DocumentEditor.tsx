@@ -14,7 +14,7 @@ import { QuestionnaireDocument } from '../../components/documents/Questionnaire/
 import { DiscoveryDocument } from '../../components/documents/Discovery/DiscoveryDocument'
 import { SpecDocument } from '../../components/documents/Spec/SpecDocument'
 import { STATUS_COLORS, type DocumentStatus, type Client, type QuestionnaireContent } from '../../types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { autoVaultDocument } from '../../lib/documents/autoVault'
 
 const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
@@ -39,6 +39,43 @@ export default function DocumentEditor() {
 
   const isLocked = document?.type === 'questionnaire' && (document.content as QuestionnaireContent).locked === true
   const [completing, setCompleting] = useState(false)
+  const [docPage, setDocPage] = useState(0)
+  const [pagesTotal, setPagesTotal] = useState(1)
+
+  useEffect(() => {
+    setDocPage(0)
+    const timer = setTimeout(() => {
+      const container = window.document.getElementById('document-content')
+      if (!container) { setPagesTotal(1); return }
+      const breaks = Array.from(container.querySelectorAll<HTMLElement>('.print-break'))
+      breaks.forEach((el, i) => { el.id = `doc-page-${i}` })
+      setPagesTotal(breaks.length + 1)
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [document?.id])
+
+  useEffect(() => {
+    if (pagesTotal <= 1 || document?.type === 'spec') return
+    function onScroll() {
+      let current = 0
+      for (let i = 0; i < pagesTotal - 1; i++) {
+        const el = window.document.getElementById(`doc-page-${i}`)
+        if (el && el.getBoundingClientRect().top <= 80) current = i + 1
+      }
+      setDocPage(current)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [pagesTotal, document?.type])
+
+  function scrollToPage(p: number) {
+    setDocPage(p)
+    if (p === 0) {
+      window.document.getElementById('document-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.document.getElementById(`doc-page-${p - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   async function handleDiscoveryComplete(markComplete: boolean) {
     if (!document) return
@@ -286,6 +323,23 @@ export default function DocumentEditor() {
         </div>
       )}
       </div>
+
+      {/* Section pagination — not shown for spec (has its own) */}
+      {document.type !== 'spec' && pagesTotal > 1 && (
+        <div className="no-print mt-8 flex items-center justify-center gap-4">
+          <button
+            onClick={() => scrollToPage(docPage - 1)}
+            disabled={docPage === 0}
+            className="font-body text-[11px] text-ks-slate hover:text-ks-ink disabled:opacity-30 transition-colors px-3 py-1.5 border border-ks-hairline rounded-ks hover:border-ks-ink disabled:cursor-default"
+          >← Previous</button>
+          <span className="font-body text-[11px] text-ks-silver">Page {docPage + 1} of {pagesTotal}</span>
+          <button
+            onClick={() => scrollToPage(docPage + 1)}
+            disabled={docPage >= pagesTotal - 1}
+            className="font-body text-[11px] text-ks-slate hover:text-ks-ink disabled:opacity-30 transition-colors px-3 py-1.5 border border-ks-hairline rounded-ks hover:border-ks-ink disabled:cursor-default"
+          >Next →</button>
+        </div>
+      )}
     </div>
   )
 }

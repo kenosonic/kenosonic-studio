@@ -718,6 +718,7 @@ export default function ClientDetail() {
       spec: {
         markdown: '',
         source_filename: '',
+        version: '1.0',
       },
     }
 
