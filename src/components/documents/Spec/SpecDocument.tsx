@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { marked } from 'marked'
 import type { Client, KSDocument, SpecContent } from '../../../types'
+import { DocumentShell } from '../DocumentShell'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 
@@ -12,36 +13,37 @@ interface Props {
 
 marked.setOptions({ breaks: true })
 
-export function SpecDocument({ document, client: _client, readonly = false }: Props) {
+export function SpecDocument({ document, client, readonly = false }: Props) {
   const raw = (document.content ?? {}) as SpecContent
   const [markdown, setMarkdown] = useState(raw.markdown ?? '')
-  const [sourceFilename] = useState(raw.source_filename ?? '')
+  const [sourceFilename, setSourceFilename] = useState(raw.source_filename ?? '')
   const [saving, setSaving] = useState(false)
-  const [tab, setTab] = useState<'preview' | 'source'>(readonly ? 'preview' : 'preview')
+  const [tab, setTab] = useState<'preview' | 'source'>('preview')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  async function save(md: string) {
+  async function save(md: string, filename: string) {
     setSaving(true)
     await updateDocumentContent(document.id, {
       markdown: md,
-      source_filename: sourceFilename,
+      source_filename: filename,
     } as unknown as Record<string, unknown>)
     setSaving(false)
   }
 
   useEffect(() => {
     if (readonly) return
-    const t = setTimeout(() => save(markdown), 2000)
+    const t = setTimeout(() => save(markdown, sourceFilename), 2000)
     return () => clearTimeout(t)
-  }, [markdown]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [markdown, sourceFilename]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleFileReplace(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = async (evt) => {
       const text = evt.target?.result as string
       setMarkdown(text)
+      setSourceFilename(file.name)
       setSaving(true)
       await updateDocumentContent(document.id, {
         markdown: text,
@@ -75,13 +77,13 @@ export function SpecDocument({ document, client: _client, readonly = false }: Pr
               type="file"
               accept=".md,text/markdown,text/plain"
               className="hidden"
-              onChange={handleFileReplace}
+              onChange={handleFileImport}
             />
             <button
               onClick={() => fileInputRef.current?.click()}
               className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver border border-ks-hairline px-3 py-1.5 rounded-ks hover:border-ks-ink hover:text-ks-ink transition-colors"
             >{markdown ? 'Replace .md' : 'Import .md'}</button>
-            <Button variant="dark" size="sm" onClick={() => save(markdown)} disabled={saving}>
+            <Button variant="dark" size="sm" onClick={() => save(markdown, sourceFilename)} disabled={saving}>
               <span className="sm:hidden">{saving ? '…' : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>}</span>
               <span className="hidden sm:inline">{saving ? 'Saving…' : 'Save'}</span>
             </Button>
@@ -89,61 +91,33 @@ export function SpecDocument({ document, client: _client, readonly = false }: Pr
         </div>
       )}
 
-      <div style={{ maxWidth: '850px', backgroundColor: '#FFFFFF', border: '0.5px solid #E8E5E0' }}>
-        {/* Header */}
-        <div style={{ padding: '32px 48px 24px', borderBottom: '0.5px solid #E8E5E0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '24px', height: '24px', backgroundColor: '#F56E0F', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: '#fff', fontSize: '11px', fontWeight: 800, fontFamily: 'Space Grotesk, sans-serif' }}>K</span>
-            </div>
-            <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D', letterSpacing: '-0.01em' }}>Kenosonic</span>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', color: '#9A9A9A', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Spec Document</div>
-            <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '11px', color: '#0D0D0D', fontWeight: 600, marginTop: '2px' }}>{document.reference_number}</div>
-          </div>
-        </div>
+      <DocumentShell document={document} client={client}>
+        {sourceFilename && (
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9A9A9A', marginBottom: '24px' }}>
+            Source: {sourceFilename}
+          </p>
+        )}
 
-        {/* Document title */}
-        <div style={{ padding: '24px 48px 0' }}>
-          <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '22px', fontWeight: 700, color: '#0D0D0D', letterSpacing: '-0.02em', marginBottom: '4px' }}>
-            {document.title}
-          </h1>
-          {sourceFilename && (
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9A9A9A', marginBottom: '0' }}>
-              Source: {sourceFilename}
-            </p>
-          )}
-        </div>
-
-        {/* Content area */}
-        <div style={{ padding: '24px 48px 48px' }}>
-          {tab === 'source' && !readonly ? (
-            <textarea
-              value={markdown}
-              onChange={e => setMarkdown(e.target.value)}
-              className="w-full font-mono text-[12px] text-ks-ink bg-ks-smoke border border-ks-hairline rounded-ks p-4 focus:outline-none focus:border-ks-lava resize-none"
-              style={{ minHeight: '480px', lineHeight: 1.7 }}
-              placeholder="Paste or type your markdown here…"
-            />
-          ) : markdown ? (
-            <div
-              className="spec-markdown"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '13px',
-                lineHeight: 1.8,
-                color: '#3A3A3A',
-              }}
-            />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '64px 0', fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#9A9A9A' }}>
-              No content yet.
-            </div>
-          )}
-        </div>
-      </div>
+        {tab === 'source' && !readonly ? (
+          <textarea
+            value={markdown}
+            onChange={e => setMarkdown(e.target.value)}
+            className="w-full font-mono text-[12px] text-ks-ink bg-ks-smoke border border-ks-hairline rounded-ks p-4 focus:outline-none focus:border-ks-lava resize-none"
+            style={{ minHeight: '480px', lineHeight: 1.7 }}
+            placeholder="Paste or type your markdown here…"
+          />
+        ) : markdown ? (
+          <div
+            className="spec-markdown"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+            style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', lineHeight: 1.8, color: '#3A3A3A' }}
+          />
+        ) : (
+          <div style={{ textAlign: 'center', padding: '64px 0', fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#9A9A9A' }}>
+            No content yet. Use <strong>Import .md</strong> or switch to <strong>Source</strong> to write directly.
+          </div>
+        )}
+      </DocumentShell>
     </div>
   )
 }
