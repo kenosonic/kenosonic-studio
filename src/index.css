@@ -130,10 +130,6 @@
   /* Prevent orphaned headings */
   h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
 
-  /* Spec markdown: each h2 starts a new page */
-  .spec-markdown h2 { break-before: page; page-break-before: always; }
-  .spec-markdown h2:first-child { break-before: auto; page-break-before: auto; }
-
   /* Spec document book-format pages */
   [data-spec-page="content"],
   [data-spec-page="back"] {
