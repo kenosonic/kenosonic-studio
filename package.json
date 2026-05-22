@@ -12,8 +12,10 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.106.1",
+    "@types/marked": "^5.0.2",
     "framer-motion": "^12.38.0",
     "html2pdf.js": "^0.14.0",
+    "marked": "^18.0.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.75.0",

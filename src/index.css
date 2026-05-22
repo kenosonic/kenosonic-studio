@@ -43,6 +43,59 @@
   .font-body { font-family: 'Inter', system-ui, sans-serif; }
 }
 
+/* Spec document markdown prose styles */
+.spec-markdown h1, .spec-markdown h2, .spec-markdown h3,
+.spec-markdown h4, .spec-markdown h5, .spec-markdown h6 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  color: #0D0D0D;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+.spec-markdown h1 { font-size: 20px; }
+.spec-markdown h2 { font-size: 16px; border-bottom: 0.5px solid #E8E5E0; padding-bottom: 6px; }
+.spec-markdown h3 { font-size: 14px; }
+.spec-markdown h4, .spec-markdown h5, .spec-markdown h6 { font-size: 13px; }
+.spec-markdown p { margin-bottom: 1em; }
+.spec-markdown ul, .spec-markdown ol { margin-bottom: 1em; padding-left: 1.4em; }
+.spec-markdown li { margin-bottom: 0.3em; }
+.spec-markdown code {
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  background: #F0EDE8;
+  border: 0.5px solid #E8E5E0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #F56E0F;
+}
+.spec-markdown pre {
+  background: #1A1A1A;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 1em;
+  overflow-x: auto;
+}
+.spec-markdown pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #D4D0CA;
+  font-size: 12px;
+}
+.spec-markdown blockquote {
+  border-left: 3px solid #F56E0F;
+  padding-left: 12px;
+  color: #9A9A9A;
+  margin-bottom: 1em;
+}
+.spec-markdown a { color: #F56E0F; text-decoration: underline; }
+.spec-markdown hr { border: none; border-top: 0.5px solid #E8E5E0; margin: 1.5em 0; }
+.spec-markdown table { width: 100%; border-collapse: collapse; margin-bottom: 1em; font-size: 12px; }
+.spec-markdown th, .spec-markdown td { border: 0.5px solid #E8E5E0; padding: 8px 12px; text-align: left; }
+.spec-markdown th { background: #F8F6F3; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9A9A9A; }
+.spec-markdown strong { font-weight: 600; color: #0D0D0D; }
+
 @media print {
   body { background: white !important; padding: 0 !important; }
   .no-print { display: none !important; }

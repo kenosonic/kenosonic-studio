@@ -1,7 +1,7 @@
 export type ClientStatus = 'active' | 'inactive'
 export type ProjectStatus = 'prospect' | 'active' | 'completed' | 'paused'
 export type DocumentStatus = 'draft' | 'sent' | 'viewed' | 'approved' | 'signed' | 'rejected' | 'completed'
-export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding' | 'questionnaire' | 'discovery'
+export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding' | 'questionnaire' | 'discovery' | 'spec'
 export type ServiceType = 'web' | 'digital_marketing' | 'brand' | 'google_ads' | 'social_media' | 'seo' | 'copywriting' | 'custom_dev' | 'plugins' | 'bpa' | 'other'
 export type UserRole = 'admin' | 'client'
 
@@ -48,7 +48,7 @@ export interface KSDocument {
   type: DocumentType
   title: string
   status: DocumentStatus
-  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | OffboardingContent | QuestionnaireContent | Record<string, unknown>
+  content: InvoiceContent | QuoteContent | ProposalContent | ContractContent | ReportContent | AuditContent | EmailContent | OffboardingContent | QuestionnaireContent | SpecContent | Record<string, unknown>
   reference_number: string
   sent_at?: string
   viewed_at?: string
@@ -369,6 +369,11 @@ export interface WizardData {
   notes: string
 }
 
+export interface SpecContent {
+  markdown: string
+  source_filename?: string
+}
+
 export const SERVICE_LABELS: Record<ServiceType, string> = {
   web: 'Website Development',
   digital_marketing: 'Digital Marketing',
@@ -394,6 +399,7 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   offboarding: 'Offboarding',
   questionnaire: 'Project Brief',
   discovery: 'Discovery Session',
+  spec: 'Spec Document',
 }
 
 export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
@@ -407,6 +413,7 @@ export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
   offboarding: 'OFB',
   questionnaire: 'BRIEF',
   discovery: 'DISC',
+  spec: 'SPEC',
 }
 
 export const STATUS_COLORS: Record<DocumentStatus, string> = {

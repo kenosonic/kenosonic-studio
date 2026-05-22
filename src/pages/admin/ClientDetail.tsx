@@ -715,6 +715,10 @@ export default function ClientDetail() {
         howTheyFoundUs: '', successMetrics: '',
         additionalInfo: '', confirmation: true,
       },
+      spec: {
+        markdown: '',
+        source_filename: '',
+      },
     }
 
     try {
@@ -811,10 +815,18 @@ export default function ClientDetail() {
                 {/* Email + Offboarding + Questionnaire + Discovery Session */}
                 {(['email', 'offboarding', 'questionnaire', 'discovery'] as DocumentType[]).map(type => (
                   <button key={type} onClick={() => handleCreateDoc(type)}
-                    className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0">
+                    className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline">
                     {DOC_TYPE_LABELS[type]}
                   </button>
                 ))}
+
+                {/* Spec Document */}
+                <button
+                  onClick={() => handleCreateDoc('spec')}
+                  className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors"
+                >
+                  Spec Document
+                </button>
               </div>
             )}
           </div>

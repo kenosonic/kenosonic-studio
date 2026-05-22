@@ -12,6 +12,7 @@ import { EmailDocument } from '../../components/documents/Email/EmailDocument'
 import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
 import { DiscoveryDocument } from '../../components/documents/Discovery/DiscoveryDocument'
+import { SpecDocument } from '../../components/documents/Spec/SpecDocument'
 import { STATUS_COLORS, type DocumentStatus, type Client, type QuestionnaireContent } from '../../types'
 import { useState } from 'react'
 import { autoVaultDocument } from '../../lib/documents/autoVault'
@@ -277,7 +278,8 @@ export default function DocumentEditor() {
       {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} />}
       {document.type === 'questionnaire' && client && <QuestionnaireDocument document={document} client={client} />}
       {document.type === 'discovery' && client && <DiscoveryDocument document={document} client={client} />}
-      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire', 'discovery'].includes(document.type) && (
+      {document.type === 'spec' && client && <SpecDocument document={document} client={client} />}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire', 'discovery', 'spec'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <MicroLabel className="block mb-3">Template Coming Soon</MicroLabel>
           <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is not yet available.</p>
