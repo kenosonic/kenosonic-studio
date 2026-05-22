@@ -12,6 +12,8 @@ import ClientDetail from './pages/admin/ClientDetail'
 import NewClient from './pages/admin/NewClient'
 import Documents from './pages/admin/Documents'
 import DocumentEditor from './pages/admin/DocumentEditor'
+import Vault from './pages/admin/Vault'
+import Compliance from './pages/admin/Compliance'
 import PortalHome from './pages/portal/PortalHome'
 import DocumentView from './pages/portal/DocumentView'
 
@@ -36,6 +38,8 @@ export default function App() {
                   <Route path="clients/:id" element={<ClientDetail />} />
                   <Route path="documents" element={<Documents />} />
                   <Route path="documents/:id" element={<DocumentEditor />} />
+                  <Route path="vault" element={<Vault />} />
+                  <Route path="compliance" element={<Compliance />} />
                 </Routes>
               </AdminShell>
             </ProtectedRoute>

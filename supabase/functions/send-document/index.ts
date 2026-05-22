@@ -11,7 +11,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const RESEND_KEY = Deno.env.get('RESEND_API_KEY')!
 const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://kenosonic-studio.vercel.app').replace(/\/$/, '')
 const FROM = Deno.env.get('FROM_EMAIL') ?? 'Kenosonic Interactive <hello@kenosonic.co.za>'
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'hello@kenosonic.co.za'
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'stevenrerani@gmail.com'
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   invoice: 'Invoice', quote: 'Quote', proposal: 'Proposal', contract: 'Contract',

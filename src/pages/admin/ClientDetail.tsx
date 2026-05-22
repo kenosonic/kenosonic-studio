@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useClient, updateClient } from '../../hooks/useClient'
 import { useDocuments, createDocument } from '../../hooks/useDocument'
@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { Button, MicroLabel } from '../../components/ui'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type Client, type DocumentType, type ServiceType, type ProposalContent, type AuditContent } from '../../types'
+import type { VaultRecord } from '../../lib/documents/uploadDocument'
 
 const PROPOSAL_SERVICES: { label: string; serviceType: ServiceType }[] = [
   { label: 'Website Development',      serviceType: 'web' },
@@ -481,6 +482,17 @@ export default function ClientDetail() {
   const [editForm, setEditForm] = useState<EditForm | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [vaultFiles, setVaultFiles] = useState<VaultRecord[]>([])
+
+  useEffect(() => {
+    if (!id) return
+    supabase
+      .from('ks_file_vault')
+      .select('id, file_name, doc_type, tax_year, drive_file_id, created_at')
+      .eq('client_id', id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setVaultFiles(data as VaultRecord[]) })
+  }, [id])
 
   function startEdit() {
     if (!client) return
@@ -911,6 +923,40 @@ export default function ClientDetail() {
           </div>
         )}
       </div>
+
+      {/* Vault Files */}
+      {vaultFiles.length > 0 && (
+        <div className="mt-10">
+          <MicroLabel className="block mb-4">Vault Files</MicroLabel>
+          <div className="bg-white border border-ks-hairline">
+            {vaultFiles.map((f, i) => (
+              <div
+                key={f.id}
+                className={`flex items-center justify-between px-4 sm:px-6 py-3.5 gap-3 ${i < vaultFiles.length - 1 ? 'border-b border-ks-hairline' : ''}`}
+              >
+                <div className="min-w-0">
+                  <p className="font-body text-[12px] text-ks-ink truncate">{f.file_name}</p>
+                  <p className="font-body text-[10px] text-ks-silver mt-0.5">{f.doc_type} · {f.tax_year}</p>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {f.drive_file_id ? (
+                    <a
+                      href={`https://drive.google.com/file/d/${f.drive_file_id}/view`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-[9px] uppercase tracking-[0.1em] text-ks-lava hover:underline"
+                    >
+                      Drive →
+                    </a>
+                  ) : (
+                    <span className="font-body text-[9px] text-ks-silver">Pending sync</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

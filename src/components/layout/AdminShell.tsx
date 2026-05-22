@@ -8,6 +8,8 @@ const NAV = [
   { to: '/admin', label: 'Dashboard', icon: '▪' },
   { to: '/admin/clients', label: 'Clients', icon: '◆' },
   { to: '/admin/documents', label: 'Documents', icon: '◈' },
+  { to: '/admin/vault', label: 'Vault', icon: '◉' },
+  { to: '/admin/compliance', label: 'Compliance', icon: '◇' },
 ]
 
 function BellIcon() {

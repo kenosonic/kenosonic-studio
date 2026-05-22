@@ -13,6 +13,7 @@ import { OffboardingDocument } from '../../components/documents/Offboarding/Offb
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
 import { STATUS_COLORS, type DocumentStatus, type Client, type QuestionnaireContent } from '../../types'
 import { useState } from 'react'
+import { autoVaultDocument } from '../../lib/documents/autoVault'
 
 const NEXT_STATUS: Partial<Record<DocumentStatus, DocumentStatus>> = {
   sent: 'approved',
@@ -56,6 +57,9 @@ export default function DocumentEditor() {
         setDocument(d => d ? { ...d, status: 'sent', sent_at: new Date().toISOString() } : d)
       }
       setSendSuccess(true)
+      if (document.type === 'invoice' && client) {
+        autoVaultDocument(document, client)
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
       setSendError(msg)
@@ -100,6 +104,9 @@ export default function DocumentEditor() {
     await updateDocumentStatus(document.id, next)
     setDocument(d => d ? { ...d, status: next } : d)
     setUpdating(false)
+    if (document.type === 'proposal' && next === 'approved' && client) {
+      autoVaultDocument(document, client)
+    }
   }
 
   if (loading) return <div className="px-10 py-10 text-ks-silver font-body text-[12px]">Loading...</div>
