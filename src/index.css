@@ -135,13 +135,19 @@
   .spec-markdown h2:first-child { break-before: auto; page-break-before: auto; }
 
   /* Spec document book-format pages */
-  [data-spec-page="content"],
   [data-spec-page="back"] {
     break-before: page !important;
     page-break-before: always !important;
   }
-  [data-spec-page] {
+  [data-spec-page="content"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  [data-spec-page="cover"],
+  [data-spec-page="back"] {
     min-height: 267mm !important;
+  }
+  [data-spec-page] {
     max-width: none !important;
     width: 100% !important;
   }

@@ -140,16 +140,12 @@ function ContentPage({ section, docRef, title, version, date }: {
       data-spec-page="content"
       style={{
         backgroundColor: '#FFFFFF',
-        minHeight: '1100px',
-        display: 'flex',
-        flexDirection: 'column',
         width: '100%',
         maxWidth: '850px',
         boxSizing: 'border-box',
       }}
     >
-      {/* Content area */}
-      <div style={{ flex: 1, padding: '48px 56px 32px' }}>
+      <div style={{ padding: '40px 56px 24px' }}>
         {section.heading && (
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#F56E0F', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '20px' }}>
             {section.heading}
@@ -162,8 +158,8 @@ function ContentPage({ section, docRef, title, version, date }: {
         />
       </div>
 
-      {/* Running footer */}
-      <div style={{ borderTop: '0.5px solid #E8E5E0', padding: '12px 56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Section separator with doc metadata */}
+      <div style={{ borderTop: '0.5px solid #E8E5E0', padding: '10px 56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '8px', color: '#C0BDB8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
           Spec Document · {truncTitle} · v{version} · {date}
         </p>
