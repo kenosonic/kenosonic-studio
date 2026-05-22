@@ -4,7 +4,7 @@ import { MicroLabel } from '../../components/ui'
 import { DOC_TYPE_LABELS, STATUS_COLORS, type DocumentType } from '../../types'
 import { useState } from 'react'
 
-const ALL_TYPES: Array<DocumentType | 'all'> = ['all', 'invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding']
+const ALL_TYPES: Array<DocumentType | 'all'> = ['all', 'invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'discovery']
 
 export default function Documents() {
   const [showArchived, setShowArchived] = useState(false)

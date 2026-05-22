@@ -11,6 +11,7 @@ import { AuditDocument } from '../../components/documents/Audit/AuditDocument'
 import { EmailDocument } from '../../components/documents/Email/EmailDocument'
 import { OffboardingDocument } from '../../components/documents/Offboarding/OffboardingDocument'
 import { QuestionnaireDocument } from '../../components/documents/Questionnaire/QuestionnaireDocument'
+import { DiscoveryDocument } from '../../components/documents/Discovery/DiscoveryDocument'
 import { STATUS_COLORS, type DocumentStatus, type Client, type QuestionnaireContent } from '../../types'
 import { useState } from 'react'
 import { autoVaultDocument } from '../../lib/documents/autoVault'
@@ -36,6 +37,16 @@ export default function DocumentEditor() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   const isLocked = document?.type === 'questionnaire' && (document.content as QuestionnaireContent).locked === true
+  const [completing, setCompleting] = useState(false)
+
+  async function handleDiscoveryComplete(markComplete: boolean) {
+    if (!document) return
+    setCompleting(true)
+    const newStatus: DocumentStatus = markComplete ? 'completed' : 'draft'
+    await updateDocumentStatus(document.id, newStatus)
+    setDocument(d => d ? { ...d, status: newStatus } : d)
+    setCompleting(false)
+  }
 
   async function handleToggleLock() {
     if (!document) return
@@ -146,12 +157,22 @@ export default function DocumentEditor() {
               {locking ? 'Updating…' : isLocked ? 'Unlock Brief' : 'Lock Brief'}
             </Button>
           )}
-          {document.status === 'draft' && !document.archived && (
+          {document.type === 'discovery' && document.status === 'draft' && !document.archived && (
+            <Button variant="dark" size="sm" onClick={() => handleDiscoveryComplete(true)} disabled={completing}>
+              {completing ? 'Saving…' : 'Mark as Complete'}
+            </Button>
+          )}
+          {document.type === 'discovery' && document.status === 'completed' && !document.archived && (
+            <Button variant="outline" size="sm" onClick={() => handleDiscoveryComplete(false)} disabled={completing}>
+              {completing ? 'Updating…' : 'Reopen Session'}
+            </Button>
+          )}
+          {document.type !== 'discovery' && document.status === 'draft' && !document.archived && (
             <Button variant="orange" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Sending…' : 'Send to Client'}
             </Button>
           )}
-          {document.status !== 'draft' && !document.archived && (
+          {document.type !== 'discovery' && document.status !== 'draft' && !document.archived && (
             <Button variant="outline" size="sm" onClick={handleSend} disabled={sending}>
               {sending ? 'Resending…' : 'Resend'}
             </Button>
@@ -255,7 +276,8 @@ export default function DocumentEditor() {
       {document.type === 'email' && client && <EmailDocument document={document} client={client} />}
       {document.type === 'offboarding' && client && <OffboardingDocument document={document} client={client} />}
       {document.type === 'questionnaire' && client && <QuestionnaireDocument document={document} client={client} />}
-      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire'].includes(document.type) && (
+      {document.type === 'discovery' && client && <DiscoveryDocument document={document} client={client} />}
+      {!['invoice', 'quote', 'proposal', 'contract', 'report', 'audit', 'email', 'offboarding', 'questionnaire', 'discovery'].includes(document.type) && (
         <div className="bg-white border border-ks-hairline p-16 text-center max-w-[850px]">
           <MicroLabel className="block mb-3">Template Coming Soon</MicroLabel>
           <p className="font-body text-[13px] text-ks-slate capitalize">{document.type} template is not yet available.</p>

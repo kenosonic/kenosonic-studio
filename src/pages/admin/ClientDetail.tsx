@@ -683,6 +683,38 @@ export default function ClientDetail() {
         // Sign-off
         additionalInfo: '', confirmation: false,
       },
+      discovery: {
+        serviceType: '',
+        businessName: client.company_name,
+        email: client.contact_email,
+        phone: client.contact_phone,
+        tagline: '', businessDescription: '', competitorDifference: '', yearsInBusiness: '',
+        address: '', businessHours: '',
+        socialMediaLinks: { instagram: '', linkedin: '', facebook: '', tiktok: '' },
+        toneOfVoice: [], brandArchetype: '', brandStory: '', brandValues: '', currentBrandIssues: '',
+        primaryGoal: '', targetDemographics: '', targetProblem: '', targetAdvantage: '',
+        desiredVisitorActions: [],
+        marketingChannels: [], monthlyAdBudget: '', existingCampaigns: '',
+        currentWebsiteUrl: '', targetKeywords: '', contentTopics: '', techStackNotes: '',
+        desiredFeel: [], designTrends: [],
+        typographyFeel: '', iconStyle: '', imageStyle: '', uiDensity: '',
+        inspirationUrls: '', inspirationUploadUrls: ['', '', ''],
+        brandColors: '', colorsYouLike: '', colorsYouDislike: '', websiteReferences: '',
+        competitors: [
+          { name: '', url: '', like: '', dislike: '' },
+          { name: '', url: '', like: '', dislike: '' },
+          { name: '', url: '', like: '', dislike: '' },
+        ],
+        standardPages: [], copyReadiness: '', imagesReadiness: '', logoReadiness: '',
+        dynamicContentNeeds: '', specificFeatures: [],
+        ecommerceProducts: '', ecommercePayments: '', ecommerceShipping: '',
+        platformPreference: '', ownDomain: '', domainDetails: '', haveHosting: '', hostingDetails: '',
+        thirdPartyIntegrations: [],
+        deadline: '', deadlineReason: '', availability: '', budgetExtras: '',
+        projectBudget: '', decisionMakers: '', previousAgencyExperience: '',
+        howTheyFoundUs: '', successMetrics: '',
+        additionalInfo: '', confirmation: true,
+      },
     }
 
     try {
@@ -776,8 +808,8 @@ export default function ClientDetail() {
                   </button>
                 ))}
 
-                {/* Email + Offboarding + Questionnaire */}
-                {(['email', 'offboarding', 'questionnaire'] as DocumentType[]).map(type => (
+                {/* Email + Offboarding + Questionnaire + Discovery Session */}
+                {(['email', 'offboarding', 'questionnaire', 'discovery'] as DocumentType[]).map(type => (
                   <button key={type} onClick={() => handleCreateDoc(type)}
                     className="w-full text-left px-4 py-3 font-body text-[12px] text-ks-slate hover:bg-ks-smoke transition-colors border-b border-ks-hairline last:border-b-0">
                     {DOC_TYPE_LABELS[type]}

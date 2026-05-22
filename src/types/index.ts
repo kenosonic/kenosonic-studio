@@ -1,7 +1,7 @@
 export type ClientStatus = 'active' | 'inactive'
 export type ProjectStatus = 'prospect' | 'active' | 'completed' | 'paused'
 export type DocumentStatus = 'draft' | 'sent' | 'viewed' | 'approved' | 'signed' | 'rejected' | 'completed'
-export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding' | 'questionnaire'
+export type DocumentType = 'invoice' | 'quote' | 'proposal' | 'contract' | 'report' | 'audit' | 'email' | 'offboarding' | 'questionnaire' | 'discovery'
 export type ServiceType = 'web' | 'digital_marketing' | 'brand' | 'google_ads' | 'social_media' | 'seo' | 'copywriting' | 'custom_dev' | 'plugins' | 'bpa' | 'other'
 export type UserRole = 'admin' | 'client'
 
@@ -393,6 +393,7 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   email: 'Email',
   offboarding: 'Offboarding',
   questionnaire: 'Project Brief',
+  discovery: 'Discovery Session',
 }
 
 export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
@@ -405,6 +406,7 @@ export const DOC_TYPE_PREFIX: Record<DocumentType, string> = {
   email: 'EM',
   offboarding: 'OFB',
   questionnaire: 'BRIEF',
+  discovery: 'DISC',
 }
 
 export const STATUS_COLORS: Record<DocumentStatus, string> = {
