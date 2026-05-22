@@ -96,6 +96,12 @@
 .spec-markdown th { background: #F8F6F3; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9A9A9A; }
 .spec-markdown strong { font-weight: 600; color: #0D0D0D; }
 
+/* Force exact background/color rendering for spec pages in print */
+[data-spec-page] {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
 @page {
   size: A4 portrait;
   margin: 15mm;
@@ -104,7 +110,10 @@
 @media print {
   body { background: white !important; padding: 0 !important; }
   .no-print { display: none !important; }
-  [contenteditable="true"] { border-bottom: none !important; background: transparent !important; }
+  [data-spec-page] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 
   /* DocumentShell root */
   #document-content {
