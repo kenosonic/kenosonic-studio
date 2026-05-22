@@ -39,6 +39,50 @@ type ComplianceReminder = {
   notes: string | null
 }
 
+type BusinessInfo = {
+  entity: string
+  company_name: string
+  trading_name: string
+  registration_number: string
+  vat_number: string
+  tax_reference_number: string
+  registered_address: string
+  postal_address: string
+  contact_email: string
+  contact_phone: string
+  financial_year_end: string
+  bbbee_level: string
+  bank_name: string
+  bank_account_number: string
+  bank_branch_code: string
+  notes: string
+}
+
+const BIZ_FIELDS: Array<{ key: keyof Omit<BusinessInfo, 'entity'>; label: string; wide?: boolean }> = [
+  { key: 'company_name',         label: 'Legal company name',        wide: true },
+  { key: 'trading_name',         label: 'Trading / brand name' },
+  { key: 'registration_number',  label: 'CIPC registration number' },
+  { key: 'vat_number',           label: 'VAT number' },
+  { key: 'tax_reference_number', label: 'Income tax reference number' },
+  { key: 'registered_address',   label: 'Registered address',        wide: true },
+  { key: 'postal_address',       label: 'Postal address',            wide: true },
+  { key: 'contact_email',        label: 'Contact email' },
+  { key: 'contact_phone',        label: 'Contact phone' },
+  { key: 'financial_year_end',   label: 'Financial year end (month)' },
+  { key: 'bbbee_level',          label: 'B-BBEE status / level' },
+  { key: 'bank_name',            label: 'Bank name' },
+  { key: 'bank_account_number',  label: 'Bank account number' },
+  { key: 'bank_branch_code',     label: 'Branch code' },
+  { key: 'notes',                label: 'Notes',                     wide: true },
+]
+
+const EMPTY_BIZ: Omit<BusinessInfo, 'entity'> = {
+  company_name: '', trading_name: '', registration_number: '', vat_number: '',
+  tax_reference_number: '', registered_address: '', postal_address: '',
+  contact_email: '', contact_phone: '', financial_year_end: 'February',
+  bbbee_level: '', bank_name: '', bank_account_number: '', bank_branch_code: '', notes: '',
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function daysUntil(dateStr: string): number {
@@ -141,6 +185,13 @@ export default function Compliance() {
   const [addingReminder, setAddingReminder] = useState(false)
   const [reminderError, setReminderError]   = useState<string | null>(null)
 
+  // Business info settings
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [bizInfo, setBizInfo]           = useState<BusinessInfo | null>(null)
+  const [bizForm, setBizForm]           = useState<Omit<BusinessInfo, 'entity'>>(EMPTY_BIZ)
+  const [bizSaving, setBizSaving]       = useState(false)
+  const [bizError, setBizError]         = useState<string | null>(null)
+
   // ─── Data loading ───────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -149,10 +200,14 @@ export default function Compliance() {
       supabase.from('compliance_items').select('*').eq('entity', entity).order('category').order('section'),
       supabase.from('compliance_reminders').select('*').eq('entity', entity).order('due_date'),
       supabase.from('ks_file_vault').select('id', { count: 'exact', head: true }).eq('entity', entity),
-    ]).then(([itemsRes, remindersRes, vaultRes]) => {
+      supabase.from('business_info').select('*').eq('entity', entity).maybeSingle(),
+    ]).then(([itemsRes, remindersRes, vaultRes, bizRes]) => {
       setItems((itemsRes.data ?? []) as ComplianceItem[])
       setReminders((remindersRes.data ?? []) as ComplianceReminder[])
       setVaultCount(vaultRes.count ?? 0)
+      const biz = bizRes.data as BusinessInfo | null
+      setBizInfo(biz)
+      setBizForm(biz ? { ...EMPTY_BIZ, ...biz } : EMPTY_BIZ)
     }).finally(() => setLoading(false))
   }, [entity])
 
@@ -223,6 +278,18 @@ export default function Compliance() {
     } finally { setVatUploading(false) }
   }
 
+  async function saveBusinessInfo() {
+    setBizSaving(true)
+    setBizError(null)
+    const { error } = await supabase
+      .from('business_info')
+      .upsert({ entity, ...bizForm, updated_at: new Date().toISOString() })
+    if (error) { setBizError(error.message); setBizSaving(false); return }
+    setBizInfo({ entity, ...bizForm })
+    setSettingsOpen(false)
+    setBizSaving(false)
+  }
+
   async function handleDocUpload() {
     if (!docFile) return
     setDocUploading(true); setDocError(null)
@@ -259,14 +326,26 @@ export default function Compliance() {
           <MicroLabel>Compliance Centre</MicroLabel>
           <h2 className="font-display font-bold text-[22px] sm:text-[24px] tracking-[-0.02em] text-ks-ink mt-1">Compliance</h2>
         </div>
-        <select
-          value={entity}
-          onChange={e => setEntity(e.target.value as VaultEntity)}
-          className="font-body text-[11px] px-3 py-2 bg-white border border-ks-rule text-ks-ink focus:outline-none focus:border-ks-ink flex-shrink-0"
-        >
-          <option value="keno_sonic">Keno Sonic</option>
-          <option value="giggle_factory">Giggle Factory</option>
-        </select>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <select
+            value={entity}
+            onChange={e => setEntity(e.target.value as VaultEntity)}
+            className="font-body text-[11px] px-3 py-2 bg-white border border-ks-rule text-ks-ink focus:outline-none focus:border-ks-ink"
+          >
+            <option value="keno_sonic">Keno Sonic</option>
+            <option value="giggle_factory">Giggle Factory</option>
+          </select>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            title="Business info settings"
+            className="px-2.5 py-2 border border-ks-rule text-ks-silver hover:text-ks-ink hover:border-ks-ink transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Tab bar */}
@@ -762,6 +841,88 @@ export default function Compliance() {
               <button onClick={handleVatUpload} disabled={!vatMonth || !vatFile || vatUploading}
                 className="font-body font-medium text-[9px] uppercase tracking-[0.1em] px-4 py-2.5 bg-ks-lava text-white hover:opacity-90 transition-opacity disabled:opacity-40">
                 {vatUploading ? 'Uploading…' : 'Upload'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Business Info Settings Modal ────────────────────────────────────── */}
+      {settingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/50">
+          <div className="relative bg-white h-full w-full max-w-lg flex flex-col shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-ks-hairline flex-shrink-0">
+              <div>
+                <p className="font-body font-medium text-[9px] uppercase tracking-[0.15em] text-ks-lava">Business Info</p>
+                <p className="font-display font-bold text-[17px] tracking-[-0.02em] text-ks-ink mt-0.5">
+                  {entity === 'keno_sonic' ? 'Keno Sonic' : 'Giggle Factory'}
+                </p>
+              </div>
+              <button
+                onClick={() => { setSettingsOpen(false); setBizError(null) }}
+                className="text-ks-silver hover:text-ks-ink transition-colors text-[20px] leading-none"
+              >×</button>
+            </div>
+
+            {/* Quick-view strip (read-only summary when saved) */}
+            {bizInfo?.vat_number && (
+              <div className="px-6 py-3 bg-ks-smoke border-b border-ks-hairline flex flex-wrap gap-x-6 gap-y-1 flex-shrink-0">
+                {bizInfo.vat_number && (
+                  <span className="font-body text-[11px] text-ks-silver">VAT: <span className="text-ks-ink font-medium">{bizInfo.vat_number}</span></span>
+                )}
+                {bizInfo.registration_number && (
+                  <span className="font-body text-[11px] text-ks-silver">Reg: <span className="text-ks-ink font-medium">{bizInfo.registration_number}</span></span>
+                )}
+                {bizInfo.tax_reference_number && (
+                  <span className="font-body text-[11px] text-ks-silver">Tax ref: <span className="text-ks-ink font-medium">{bizInfo.tax_reference_number}</span></span>
+                )}
+              </div>
+            )}
+
+            {/* Form */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {BIZ_FIELDS.map(({ key, label, wide }) => (
+                  <div key={key} className={wide ? 'sm:col-span-2' : ''}>
+                    <label className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver block mb-1">
+                      {label}
+                    </label>
+                    {key === 'registered_address' || key === 'postal_address' || key === 'notes' ? (
+                      <textarea
+                        rows={2}
+                        value={bizForm[key]}
+                        onChange={e => setBizForm(f => ({ ...f, [key]: e.target.value }))}
+                        className="w-full font-body text-[12px] px-3 py-2.5 bg-ks-smoke border border-ks-rule text-ks-ink focus:outline-none focus:border-ks-ink resize-none"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={bizForm[key]}
+                        onChange={e => setBizForm(f => ({ ...f, [key]: e.target.value }))}
+                        className="w-full font-body text-[12px] px-3 py-2.5 bg-ks-smoke border border-ks-rule text-ks-ink focus:outline-none focus:border-ks-ink"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {bizError && <p className="font-body text-[11px] text-red-600 mt-4">{bizError}</p>}
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 px-6 py-5 border-t border-ks-hairline flex-shrink-0">
+              <button
+                onClick={() => { setSettingsOpen(false); setBizError(null) }}
+                className="font-body font-medium text-[9px] uppercase tracking-[0.1em] px-5 py-2.5 border border-ks-rule text-ks-silver hover:text-ks-ink transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveBusinessInfo}
+                disabled={bizSaving}
+                className="font-body font-medium text-[9px] uppercase tracking-[0.1em] px-5 py-2.5 bg-ks-lava text-white hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {bizSaving ? 'Saving…' : 'Save'}
               </button>
             </div>
           </div>
