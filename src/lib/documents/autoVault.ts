@@ -1,6 +1,5 @@
 import { generatePDFBlob } from '../pdf'
 import { uploadDocument } from './uploadDocument'
-import { getTaxYear } from './taxYear'
 import type { KSDocument } from '../../types'
 import type { Client } from '../../types'
 import type { VaultDocType } from './nameFormatter'
@@ -31,7 +30,6 @@ export async function autoVaultDocument(
   if (!vaultDocType) return // only vault mapped types
 
   const issueDate = (doc.content as Record<string, string>).issue_date ?? doc.created_at
-  const taxYear   = getTaxYear(issueDate)
   const clientSlug = client.company_name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)
   const description = `${clientSlug}_${doc.reference_number}`
 
