@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type {
   Client, KSDocument, ReportContent, ReportSection,
   ReportSectionType, ReportStat, ReportBar,
 } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -53,21 +54,33 @@ function newSectionData(type: ReportSectionType): Partial<ReportSection> {
 }
 
 export function ReportDocument({ document, client, readonly = false }: Props) {
-  const raw = document.content as ReportContent
+  const raw = (document.content ?? {}) as ReportContent
   const [content, setContent] = useState<ReportContent>({
     subtitle: raw.subtitle ?? 'Brand & Storytelling Analysis',
     sections: raw.sections ?? [],
   })
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const isMounted = useRef(false)
 
   async function save() {
     setSaving(true)
-    await updateDocumentContent(document.id, content as unknown as Record<string, unknown>)
-    setSaving(false)
+    setSaveError(null)
+    try {
+      await updateDocumentContent(document.id, content as unknown as Record<string, unknown>)
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed')
+    } finally {
+      setSaving(false)
+    }
   }
 
   useEffect(() => {
     if (readonly) return
+    if (!isMounted.current) {
+      isMounted.current = true
+      return
+    }
     const t = setTimeout(save, 2000)
     return () => clearTimeout(t)
   }, [content]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -196,7 +209,14 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
     <div>
       {/* Toolbar */}
       {!readonly && (
-        <div className="no-print flex items-center justify-between mb-6">
+        <div className="no-print mb-6">
+          {saveError && (
+            <div className="mb-3 flex items-center gap-2 bg-red-50 border border-red-200 px-3 py-2 rounded-ks">
+              <span className="text-red-500 text-[12px]">✕</span>
+              <p className="font-body text-[11px] text-red-700">Save failed: {saveError}</p>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
           <p className="font-body text-[11px] text-ks-silver hidden sm:block">Click any text to edit inline.</p>
           <div className="flex gap-2 ml-auto sm:ml-0 sm:gap-3">
             <Button variant="outline" size="sm" onClick={() => exportToPDF('document-content', `${document.reference_number}`)} title="Export PDF">
@@ -208,6 +228,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
               <span className="hidden sm:inline">{saving ? 'Saving…' : 'Save'}</span>
             </Button>
           </div>
+          </div>
         </div>
       )}
 
@@ -218,7 +239,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
           <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '36px', fontWeight: 700, lineHeight: 1.0, color: '#0D0D0D', marginBottom: '12px', letterSpacing: '-0.03em' }}>
             {client.company_name} —<br />
             {readonly ? content.subtitle : (
-              <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, subtitle: e.currentTarget.innerText }))} style={{ display: 'inline-block' }}>{content.subtitle}</span>
+              <Editable value={content.subtitle} onSave={v => setContent(c => ({ ...c, subtitle: v }))} style={{ display: 'inline-block' }} />
             )}
           </h2>
           <div style={{ height: '3px', width: '64px', backgroundColor: '#F56E0F' }} />
@@ -258,8 +279,8 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                   </>
                 ) : (
                   <>
-                    <span contentEditable suppressContentEditableWarning onBlur={e => setSection(section.id, s => ({ ...s, micro: e.currentTarget.innerText }))} style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#F56E0F', display: 'block', marginBottom: '4px' }}>{section.micro}</span>
-                    <h3 contentEditable suppressContentEditableWarning onBlur={e => setSection(section.id, s => ({ ...s, heading: e.currentTarget.innerText }))} style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', fontWeight: 700, color: '#0D0D0D', textTransform: 'uppercase', letterSpacing: '0.02em', borderBottom: '0.5px solid #D4D0CA', paddingBottom: '8px' }}>{section.heading}</h3>
+                    <Editable value={section.micro} onSave={v => setSection(section.id, s => ({ ...s, micro: v }))} style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#F56E0F', display: 'block', marginBottom: '4px' }} />
+                    <Editable tag="h3" value={section.heading} onSave={v => setSection(section.id, s => ({ ...s, heading: v }))} style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', fontWeight: 700, color: '#0D0D0D', textTransform: 'uppercase', letterSpacing: '0.02em', borderBottom: '0.5px solid #D4D0CA', paddingBottom: '8px' }} />
                   </>
                 )}
               </div>
@@ -268,7 +289,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
               {section.type === 'text' && (
                 readonly
                   ? <p style={{ fontSize: '14px', color: '#0D0D0D' }}>{section.body}</p>
-                  : <p contentEditable suppressContentEditableWarning onBlur={e => setSection(section.id, s => ({ ...s, body: e.currentTarget.innerText }))} style={{ fontSize: '14px', color: '#0D0D0D' }}>{section.body}</p>
+                  : <Editable tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', color: '#0D0D0D' }} />
               )}
 
               {/* ── Callout ──────────────────────────────────────────── */}
@@ -276,7 +297,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                 <div style={{ padding: '32px', border: '0.5px solid #D4D0CA', backgroundColor: '#F0EDE8' }}>
                   {readonly
                     ? <p style={{ fontSize: '14px', lineHeight: 1.6 }}>{section.body}</p>
-                    : <p contentEditable suppressContentEditableWarning onBlur={e => setSection(section.id, s => ({ ...s, body: e.currentTarget.innerText }))} style={{ fontSize: '14px', lineHeight: 1.6 }}>{section.body}</p>
+                    : <Editable tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', lineHeight: 1.6 }} />
                   }
                 </div>
               )}
@@ -296,8 +317,8 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         </>
                       ) : (
                         <>
-                          <h4 contentEditable suppressContentEditableWarning onBlur={e => updateGridItem(section.id, item.id, 't', e.currentTarget.innerText)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '13px', fontWeight: 700, color: '#0D0D0D', marginBottom: '6px' }}>{item.t}</h4>
-                          <p contentEditable suppressContentEditableWarning onBlur={e => updateGridItem(section.id, item.id, 'b', e.currentTarget.innerText)}>{item.b}</p>
+                          <Editable tag="h4" value={item.t} onSave={v => updateGridItem(section.id, item.id, 't', v)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '13px', fontWeight: 700, color: '#0D0D0D', marginBottom: '6px' }} />
+                          <Editable tag="p" value={item.b} onSave={v => updateGridItem(section.id, item.id, 'b', v)} />
                         </>
                       )}
                     </div>
@@ -317,7 +338,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         {section.columns.map((col, ci) => (
                           <th key={ci} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '2px solid #0D0D0D', color: '#9A9A9A', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap', position: 'relative' }}>
                             {readonly ? col : (
-                              <span contentEditable suppressContentEditableWarning onBlur={e => updateColumn(section.id, ci, e.currentTarget.innerText)} style={{ display: 'block', minWidth: '60px' }}>{col}</span>
+                              <Editable value={col} onSave={v => updateColumn(section.id, ci, v)} style={{ display: 'block', minWidth: '60px' }} />
                             )}
                             {!readonly && (
                               <button className="no-print absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full leading-none" onClick={() => removeTableColumn(section.id, ci)}>×</button>
@@ -333,7 +354,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                           {row.cells.map((cell, ci) => (
                             <td key={ci} style={{ padding: '10px 12px', borderBottom: '0.5px solid #E8E5E0', color: '#3A3A3A', verticalAlign: 'top' }}>
                               {readonly ? cell : (
-                                <span contentEditable suppressContentEditableWarning onBlur={e => updateCell(section.id, row.id, ci, e.currentTarget.innerText)} style={{ display: 'block', minWidth: '40px' }}>{cell}</span>
+                                <Editable value={cell} onSave={v => updateCell(section.id, row.id, ci, v)} style={{ display: 'block', minWidth: '40px' }} />
                               )}
                             </td>
                           ))}
@@ -367,13 +388,13 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         {/* Value */}
                         <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '30px', color: '#0D0D0D', lineHeight: 1, marginBottom: '8px' }}>
                           {readonly ? stat.value : (
-                            <span contentEditable suppressContentEditableWarning onBlur={e => updateStat(section.id, stat.id, 'value', e.currentTarget.innerText)}>{stat.value}</span>
+                            <Editable value={stat.value} onSave={v => updateStat(section.id, stat.id, 'value', v)} />
                           )}
                         </p>
                         {/* Label */}
                         <p style={{ fontSize: '9px', color: '#9A9A9A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: stat.change ? '10px' : 0 }}>
                           {readonly ? stat.label : (
-                            <span contentEditable suppressContentEditableWarning onBlur={e => updateStat(section.id, stat.id, 'label', e.currentTarget.innerText)}>{stat.label}</span>
+                            <Editable value={stat.label} onSave={v => updateStat(section.id, stat.id, 'label', v)} />
                           )}
                         </p>
                         {/* Trend badge */}
@@ -382,7 +403,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                             <span style={{ fontSize: '10px', color: stat.up ? '#16a34a' : '#dc2626', fontWeight: 700, lineHeight: 1 }}>{stat.up ? '↑' : '↓'}</span>
                             <span style={{ fontSize: '10px', color: stat.up ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
                               {readonly ? stat.change : (
-                                <span contentEditable suppressContentEditableWarning onBlur={e => updateStat(section.id, stat.id, 'change', e.currentTarget.innerText)}>{stat.change}</span>
+                                <Editable value={stat.change!} onSave={v => updateStat(section.id, stat.id, 'change', v)} />
                               )}
                             </span>
                           </div>
@@ -419,7 +440,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         {readonly ? (
                           <span style={{ fontSize: '12px', color: '#3A3A3A' }}>{bar.label}</span>
                         ) : (
-                          <span contentEditable suppressContentEditableWarning onBlur={e => updateBar(section.id, bar.id, 'label', e.currentTarget.innerText)} style={{ fontSize: '12px', color: '#3A3A3A', display: 'block' }}>{bar.label}</span>
+                          <Editable value={bar.label} onSave={v => updateBar(section.id, bar.id, 'label', v)} style={{ fontSize: '12px', color: '#3A3A3A', display: 'block' }} />
                         )}
                       </div>
                       {/* Bar track */}
@@ -431,7 +452,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         {readonly ? (
                           <span style={{ fontSize: '12px', fontWeight: 700, color: '#0D0D0D', fontFamily: 'Space Grotesk, sans-serif' }}>{bar.display ?? `${bar.value}%`}</span>
                         ) : (
-                          <span contentEditable suppressContentEditableWarning onBlur={e => updateBar(section.id, bar.id, 'display', e.currentTarget.innerText)} style={{ fontSize: '12px', fontWeight: 700, color: '#0D0D0D', fontFamily: 'Space Grotesk, sans-serif', display: 'block', textAlign: 'right' }}>{bar.display ?? `${bar.value}%`}</span>
+                          <Editable value={bar.display ?? `${bar.value}%`} onSave={v => updateBar(section.id, bar.id, 'display', v)} style={{ fontSize: '12px', fontWeight: 700, color: '#0D0D0D', fontFamily: 'Space Grotesk, sans-serif', display: 'block', textAlign: 'right' }} />
                         )}
                       </div>
                       {/* Slider + remove (edit only) */}
@@ -478,7 +499,7 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                         {readonly ? (
                           section.image_caption && <p style={{ fontSize: '11px', color: '#9A9A9A', fontStyle: 'italic' }}>{section.image_caption}</p>
                         ) : (
-                          <span contentEditable suppressContentEditableWarning onBlur={e => setSection(section.id, s => ({ ...s, image_caption: e.currentTarget.innerText }))} style={{ fontSize: '11px', color: '#9A9A9A', fontStyle: 'italic', display: 'block' }}>{section.image_caption || 'Add a caption…'}</span>
+                          <Editable value={section.image_caption || 'Add a caption…'} onSave={v => setSection(section.id, s => ({ ...s, image_caption: v === 'Add a caption…' ? '' : v }))} style={{ fontSize: '11px', color: '#9A9A9A', fontStyle: 'italic', display: 'block' }} />
                         )}
                       </div>
                     </div>

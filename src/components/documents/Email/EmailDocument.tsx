@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Client, EmailContent, KSDocument } from '../../../types'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 
@@ -86,12 +87,11 @@ export function EmailDocument({ document, client, readonly = false }: Props) {
             {readonly ? (
               <span style={{ color: '#0D0D0D', fontWeight: 600 }}>{content.subject || '(no subject)'}</span>
             ) : (
-              <span
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={e => setContent(c => ({ ...c, subject: e.currentTarget.innerText }))}
+              <Editable
+                value={content.subject || 'Enter subject line…'}
+                onSave={v => setContent(c => ({ ...c, subject: v === 'Enter subject line…' ? '' : v }))}
                 style={{ color: '#0D0D0D', fontWeight: 600, flex: 1, outline: 'none', borderBottom: '1px dashed #D4D0CA' }}
-              >{content.subject || 'Enter subject line…'}</span>
+              />
             )}
           </div>
         </div>
@@ -115,12 +115,12 @@ export function EmailDocument({ document, client, readonly = false }: Props) {
             {readonly ? (
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#0D0D0D', fontWeight: 500 }}>{content.greeting}</p>
             ) : (
-              <p
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={e => setContent(c => ({ ...c, greeting: e.currentTarget.innerText }))}
+              <Editable
+                tag="p"
+                value={content.greeting}
+                onSave={v => setContent(c => ({ ...c, greeting: v }))}
                 style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#0D0D0D', fontWeight: 500, outline: 'none', borderBottom: '1px dashed #D4D0CA' }}
-              >{content.greeting}</p>
+              />
             )}
           </div>
 
@@ -139,23 +139,23 @@ export function EmailDocument({ document, client, readonly = false }: Props) {
                   readonly ? (
                     section.heading ? <h4 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', marginBottom: '8px' }}>{section.heading}</h4> : null
                   ) : (
-                    <h4
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={e => updateSection(section.id, 'heading', e.currentTarget.innerText)}
+                    <Editable
+                      tag="h4"
+                      value={section.heading || 'Section heading (optional)…'}
+                      onSave={v => updateSection(section.id, 'heading', v === 'Section heading (optional)…' ? '' : v)}
                       style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', marginBottom: '8px', outline: 'none', borderBottom: '1px dashed #D4D0CA', display: 'block' }}
-                    >{section.heading || 'Section heading (optional)…'}</h4>
+                    />
                   )
                 )}
                 {readonly ? (
                   <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#3A3A3A', lineHeight: 1.7 }}>{section.body}</p>
                 ) : (
-                  <p
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={e => updateSection(section.id, 'body', e.currentTarget.innerText)}
+                  <Editable
+                    tag="p"
+                    value={section.body || 'Write your message here…'}
+                    onSave={v => updateSection(section.id, 'body', v === 'Write your message here…' ? '' : v)}
                     style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#3A3A3A', lineHeight: 1.7, outline: 'none', borderBottom: '1px dashed #D4D0CA', minHeight: '40px' }}
-                  >{section.body || 'Write your message here…'}</p>
+                  />
                 )}
               </div>
             ))}
@@ -176,12 +176,11 @@ export function EmailDocument({ document, client, readonly = false }: Props) {
                 </span>
               ) : (
                 <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                  <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={e => setContent(c => ({ ...c, cta: { ...c.cta!, label: e.currentTarget.innerText } }))}
+                  <Editable
+                    value={content.cta.label}
+                    onSave={v => setContent(c => ({ ...c, cta: { ...c.cta!, label: v } }))}
                     style={{ display: 'inline-block', backgroundColor: '#F56E0F', color: '#FFFFFF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', padding: '14px 32px', borderRadius: '4px', outline: 'none', minWidth: '120px', textAlign: 'center' }}
-                  >{content.cta.label}</span>
+                  />
                   <input
                     type="text"
                     value={content.cta.url}

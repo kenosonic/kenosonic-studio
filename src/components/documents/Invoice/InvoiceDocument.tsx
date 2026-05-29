@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Client, InvoiceContent, KSDocument, LineItem } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -99,9 +100,9 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
               </>
             ) : (
               <>
-                <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, payment_terms: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A', marginBottom: '2px' }}>{content.payment_terms}</p>
-                <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, bank_details: { ...c.bank_details, bank: e.target.innerText.split(' ')[0], account: e.target.innerText.split(': ')[1] ?? c.bank_details.account } }))} style={{ fontSize: '12px', color: '#9A9A9A', marginBottom: '2px' }}>{content.bank_details.bank} Account: {content.bank_details.account}</p>
-                <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, bank_details: { ...c.bank_details, branch: e.target.innerText.replace('Branch: ', '') } }))} style={{ fontSize: '12px', color: '#9A9A9A' }}>Branch: {content.bank_details.branch}</p>
+                <Editable tag="p" value={content.payment_terms} onSave={v => setContent(c => ({ ...c, payment_terms: v }))} style={{ fontSize: '12px', color: '#3A3A3A', marginBottom: '2px' }} />
+                <Editable tag="p" value={`${content.bank_details.bank} Account: ${content.bank_details.account}`} onSave={v => setContent(c => ({ ...c, bank_details: { ...c.bank_details, bank: v.split(' ')[0], account: v.split(': ')[1] ?? c.bank_details.account } }))} style={{ fontSize: '12px', color: '#9A9A9A', marginBottom: '2px' }} />
+                <Editable tag="p" value={`Branch: ${content.bank_details.branch}`} onSave={v => setContent(c => ({ ...c, bank_details: { ...c.bank_details, branch: v.replace('Branch: ', '') } }))} style={{ fontSize: '12px', color: '#9A9A9A' }} />
               </>
             )}
           </div>
@@ -128,8 +129,8 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
                     </>
                   ) : (
                     <>
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'title', e.target.innerText)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', display: 'block', marginBottom: '4px' }}>{item.title}</span>
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'description', e.target.innerText)} style={{ fontSize: '12px', color: '#9A9A9A' }}>{item.description}</span>
+                      <Editable value={item.title} onSave={v => updateItem(item.id, 'title', v)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', display: 'block', marginBottom: '4px' }} />
+                      <Editable value={item.description} onSave={v => updateItem(item.id, 'description', v)} style={{ fontSize: '12px', color: '#9A9A9A' }} />
                     </>
                   )}
                 </td>
@@ -139,7 +140,7 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
                     {readonly ? (
                       <span>{fmt(item.amount)}</span>
                     ) : (
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'amount', parseFloat(e.target.innerText.replace(/[^\d.-]/g, '')) || 0)}>{fmt(item.amount)}</span>
+                      <Editable value={fmt(item.amount)} onSave={v => updateItem(item.id, 'amount', parseFloat(v.replace(/[^\d.-]/g, '')) || 0)} />
                     )}
                   </span>
                   {!readonly && (
@@ -186,7 +187,7 @@ export function InvoiceDocument({ document, client, readonly = false }: Props) {
             {readonly ? (
               <p style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.notes}</p>
             ) : (
-              <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, notes: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.notes || 'Add any notes here…'}</p>
+              <Editable tag="p" value={content.notes || 'Add any notes here…'} onSave={v => setContent(c => ({ ...c, notes: v === 'Add any notes here…' ? '' : v }))} style={{ fontSize: '12px', color: '#3A3A3A' }} />
             )}
           </div>
         )}

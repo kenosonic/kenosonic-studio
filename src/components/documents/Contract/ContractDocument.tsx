@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Client, ContractContent, KSDocument } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -107,7 +108,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
           {readonly ? (
             <p style={bodyText}>{content.intro}</p>
           ) : (
-            <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, intro: e.target.innerText }))} style={bodyText}>{content.intro}</p>
+            <Editable tag="p" value={content.intro} onSave={v => setContent(c => ({ ...c, intro: v }))} style={bodyText} />
           )}
         </div>
 
@@ -122,7 +123,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
                 <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }}>
                   <span style={{ color: '#F56E0F', marginRight: '8px' }}>{idx + 1}.</span>
                   {readonly ? section.heading : (
-                    <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, sections: c.sections.map(s => s.id === section.id ? { ...s, heading: e.target.innerText } : s) }))}>{section.heading}</span>
+                    <Editable value={section.heading} onSave={v => setContent(c => ({ ...c, sections: c.sections.map(s => s.id === section.id ? { ...s, heading: v } : s) }))} />
                   )}
                 </p>
                 {!readonly && (
@@ -132,7 +133,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
               {readonly ? (
                 <p style={{ ...bodyText, paddingLeft: '22px' }}>{section.body}</p>
               ) : (
-                <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, sections: c.sections.map(s => s.id === section.id ? { ...s, body: e.target.innerText } : s) }))} style={{ ...bodyText, paddingLeft: '22px' }}>{section.body}</p>
+                <Editable tag="p" value={section.body} onSave={v => setContent(c => ({ ...c, sections: c.sections.map(s => s.id === section.id ? { ...s, body: v } : s) }))} style={{ ...bodyText, paddingLeft: '22px' }} />
               )}
             </div>
           ))}
@@ -154,7 +155,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
                   <span style={bodyText}>{d}</span>
                 ) : (
                   <>
-                    <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, deliverables: c.deliverables.map((x, idx) => idx === i ? e.target.innerText : x) }))} style={{ ...bodyText, flex: 1 }}>{d}</span>
+                    <Editable value={d} onSave={v => setContent(c => ({ ...c, deliverables: c.deliverables.map((x, idx) => idx === i ? v : x) }))} style={{ ...bodyText, flex: 1 }} />
                     <button className="no-print bg-ks-void text-white text-[11px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors flex-shrink-0" onClick={() => setContent(c => ({ ...c, deliverables: c.deliverables.filter((_, idx) => idx !== i) }))}>×</button>
                   </>
                 )}
@@ -184,12 +185,12 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
                 <tr key={row.id}>
                   <td style={{ padding: '14px 0', borderBottom: '0.5px solid #E8E5E0' }}>
                     {readonly ? <span style={{ fontSize: '13px', color: '#0D0D0D', fontWeight: 500 }}>{row.milestone}</span> : (
-                      <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, timeline: c.timeline.map(t => t.id === row.id ? { ...t, milestone: e.target.innerText } : t) }))} style={{ fontSize: '13px', color: '#0D0D0D', fontWeight: 500 }}>{row.milestone}</span>
+                      <Editable value={row.milestone} onSave={v => setContent(c => ({ ...c, timeline: c.timeline.map(t => t.id === row.id ? { ...t, milestone: v } : t) }))} style={{ fontSize: '13px', color: '#0D0D0D', fontWeight: 500 }} />
                     )}
                   </td>
                   <td style={{ padding: '14px 0', borderBottom: '0.5px solid #E8E5E0' }}>
                     {readonly ? <span style={{ fontSize: '12px', color: '#9A9A9A' }}>{row.date || '—'}</span> : (
-                      <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, timeline: c.timeline.map(t => t.id === row.id ? { ...t, date: e.target.innerText } : t) }))} style={{ fontSize: '12px', color: '#9A9A9A' }}>{row.date || 'e.g. 2026-06-15'}</span>
+                      <Editable value={row.date || 'e.g. 2026-06-15'} onSave={v => setContent(c => ({ ...c, timeline: c.timeline.map(t => t.id === row.id ? { ...t, date: v === 'e.g. 2026-06-15' ? '' : v } : t) }))} style={{ fontSize: '12px', color: '#9A9A9A' }} />
                     )}
                   </td>
                   {!readonly && (
@@ -217,7 +218,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
               {readonly ? (
                 <p style={bodyText}>{content.payment_terms}</p>
               ) : (
-                <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, payment_terms: e.target.innerText }))} style={bodyText}>{content.payment_terms}</p>
+                <Editable tag="p" value={content.payment_terms} onSave={v => setContent(c => ({ ...c, payment_terms: v }))} style={bodyText} />
               )}
             </div>
             <div style={{ backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '20px', textAlign: 'right', flexShrink: 0 }}>
@@ -227,7 +228,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
                 {readonly ? (
                   <span>{fmt(content.total_value)}</span>
                 ) : (
-                  <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, total_value: parseFloat(e.target.innerText.replace(/[^\d.-]/g, '')) || 0 }))}>{fmt(content.total_value)}</span>
+                  <Editable value={fmt(content.total_value)} onSave={v => setContent(c => ({ ...c, total_value: parseFloat(v.replace(/[^\d.-]/g, '')) || 0 }))} />
                 )}
               </span>
             </div>
@@ -242,7 +243,7 @@ export function ContractDocument({ document, client, readonly = false }: Props) 
           {readonly ? (
             <p style={bodyText}>{content.terms}</p>
           ) : (
-            <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, terms: e.target.innerText }))} style={bodyText}>{content.terms}</p>
+            <Editable tag="p" value={content.terms} onSave={v => setContent(c => ({ ...c, terms: v }))} style={bodyText} />
           )}
         </div>
 

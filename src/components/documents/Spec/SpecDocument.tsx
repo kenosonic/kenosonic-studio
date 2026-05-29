@@ -132,6 +132,24 @@ export function SpecDocument({ document, client, readonly = false }: Props) {
     saveTimer.current = setTimeout(doSave, 2000)
   }
 
+  function handlePrint() {
+    // Temporarily override the global @page margin so cover/back pages are full-bleed
+    const style = window.document.createElement('style')
+    style.id = '__spec-print-override'
+    style.textContent = `
+      @page { margin: 0; }
+      [data-spec-page="cover"], [data-spec-page="back"] { min-height: 297mm !important; }
+      [data-spec-page="content"] { padding: 15mm 20mm !important; }
+    `
+    window.document.head.appendChild(style)
+    requestAnimationFrame(() => {
+      window.print()
+      window.addEventListener('afterprint', () => {
+        window.document.getElementById('__spec-print-override')?.remove()
+      }, { once: true })
+    })
+  }
+
   async function doSave() {
     const html = contentRef.current?.innerHTML ?? ''
     setSaving(true)
@@ -182,7 +200,7 @@ export function SpecDocument({ document, client, readonly = false }: Props) {
             className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver border border-ks-hairline px-3 py-1.5 rounded-ks hover:border-ks-ink hover:text-ks-ink transition-colors"
           >Import .md</button>
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver border border-ks-hairline px-3 py-1.5 rounded-ks hover:border-ks-ink hover:text-ks-ink transition-colors"
           >Print</button>
           <button

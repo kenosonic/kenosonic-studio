@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Client, QuoteContent, KSDocument, LineItem } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -87,7 +88,7 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
                 {readonly ? (
                   <span style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.issue_date}</span>
                 ) : (
-                  <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, issue_date: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.issue_date}</span>
+                  <Editable value={content.issue_date} onSave={v => setContent(c => ({ ...c, issue_date: v }))} style={{ fontSize: '12px', color: '#3A3A3A' }} />
                 )}
               </div>
               <div style={{ display: 'flex', gap: '16px' }}>
@@ -95,7 +96,7 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
                 {readonly ? (
                   <span style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.valid_until || '—'}</span>
                 ) : (
-                  <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, valid_until: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.valid_until || 'e.g. 2026-06-30'}</span>
+                  <Editable value={content.valid_until || 'e.g. 2026-06-30'} onSave={v => setContent(c => ({ ...c, valid_until: v === 'e.g. 2026-06-30' ? '' : v }))} style={{ fontSize: '12px', color: '#3A3A3A' }} />
                 )}
               </div>
               <div style={{ display: 'flex', gap: '16px' }}>
@@ -103,7 +104,7 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
                 {readonly ? (
                   <span style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.payment_terms}</span>
                 ) : (
-                  <span contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, payment_terms: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.payment_terms}</span>
+                  <Editable value={content.payment_terms} onSave={v => setContent(c => ({ ...c, payment_terms: v }))} style={{ fontSize: '12px', color: '#3A3A3A' }} />
                 )}
               </div>
             </div>
@@ -131,8 +132,8 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
                     </>
                   ) : (
                     <>
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'title', e.target.innerText)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', display: 'block', marginBottom: '4px' }}>{item.title}</span>
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'description', e.target.innerText)} style={{ fontSize: '12px', color: '#9A9A9A' }}>{item.description}</span>
+                      <Editable value={item.title} onSave={v => updateItem(item.id, 'title', v)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', display: 'block', marginBottom: '4px' }} />
+                      <Editable value={item.description} onSave={v => updateItem(item.id, 'description', v)} style={{ fontSize: '12px', color: '#9A9A9A' }} />
                     </>
                   )}
                 </td>
@@ -142,7 +143,7 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
                     {readonly ? (
                       <span>{fmt(item.amount)}</span>
                     ) : (
-                      <span contentEditable suppressContentEditableWarning onBlur={e => updateItem(item.id, 'amount', parseFloat(e.target.innerText.replace(/[^\d.-]/g, '')) || 0)}>{fmt(item.amount)}</span>
+                      <Editable value={fmt(item.amount)} onSave={v => updateItem(item.id, 'amount', parseFloat(v.replace(/[^\d.-]/g, '')) || 0)} />
                     )}
                   </span>
                   {!readonly && (
@@ -183,7 +184,7 @@ export function QuoteDocument({ document, client, readonly = false }: Props) {
             {readonly ? (
               <p style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.notes}</p>
             ) : (
-              <p contentEditable suppressContentEditableWarning onBlur={e => setContent(c => ({ ...c, notes: e.target.innerText }))} style={{ fontSize: '12px', color: '#3A3A3A' }}>{content.notes || 'Add any notes here…'}</p>
+              <Editable tag="p" value={content.notes || 'Add any notes here…'} onSave={v => setContent(c => ({ ...c, notes: v === 'Add any notes here…' ? '' : v }))} style={{ fontSize: '12px', color: '#3A3A3A' }} />
             )}
           </div>
         )}

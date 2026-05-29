@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { AuditContent, AuditSection, Client, KSDocument, ServiceType } from '../../../types'
 import { SERVICE_LABELS } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -261,12 +262,12 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
                   {readonly ? (
                     <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D' }}>{section.name}</h3>
                   ) : (
-                    <h3
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={e => updateSection(section.id, 'name', e.currentTarget.innerText)}
+                    <Editable
+                      tag="h3"
+                      value={section.name}
+                      onSave={v => updateSection(section.id, 'name', v)}
                       style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0D0D0D', minWidth: '100px' }}
-                    >{section.name}</h3>
+                    />
                   )}
                 </div>
                 <ScoreBar
@@ -282,12 +283,12 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
                   {readonly ? (
                     <p style={bodyText}>{section.findings || '—'}</p>
                   ) : (
-                    <p
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={e => updateSection(section.id, 'findings', e.currentTarget.innerText)}
+                    <Editable
+                      tag="p"
+                      value={section.findings || 'Describe findings here…'}
+                      onSave={v => updateSection(section.id, 'findings', v === 'Describe findings here…' ? '' : v)}
                       style={{ ...bodyText, minHeight: '48px', padding: '8px', backgroundColor: '#FAFAF9', border: '0.5px solid #E8E5E0' }}
-                    >{section.findings || 'Describe findings here…'}</p>
+                    />
                   )}
                 </div>
                 <div>
@@ -295,12 +296,12 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
                   {readonly ? (
                     <p style={bodyText}>{section.recommendations || '—'}</p>
                   ) : (
-                    <p
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={e => updateSection(section.id, 'recommendations', e.currentTarget.innerText)}
+                    <Editable
+                      tag="p"
+                      value={section.recommendations || 'Write recommendations here…'}
+                      onSave={v => updateSection(section.id, 'recommendations', v === 'Write recommendations here…' ? '' : v)}
                       style={{ ...bodyText, minHeight: '48px', padding: '8px', backgroundColor: '#FAFAF9', border: '0.5px solid #E8E5E0' }}
-                    >{section.recommendations || 'Write recommendations here…'}</p>
+                    />
                   )}
                 </div>
               </div>
@@ -322,12 +323,12 @@ export function AuditDocument({ document, client, readonly = false }: Props) {
           {readonly ? (
             <p style={bodyText}>{content.summary || '—'}</p>
           ) : (
-            <p
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={e => setContent(c => ({ ...c, summary: e.currentTarget.innerText }))}
+            <Editable
+              tag="p"
+              value={content.summary || 'Write an executive summary of the audit findings and overall recommendations…'}
+              onSave={v => setContent(c => ({ ...c, summary: v === 'Write an executive summary of the audit findings and overall recommendations…' ? '' : v }))}
               style={{ ...bodyText, minHeight: '80px', padding: '12px', backgroundColor: '#FAFAF9', border: '0.5px solid #E8E5E0' }}
-            >{content.summary || 'Write an executive summary of the audit findings and overall recommendations…'}</p>
+            />
           )}
         </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Client, ProposalContent, ProposalLineItem, ProposalTimeline, KSDocument, ServiceType } from '../../../types'
 import { SERVICE_LABELS } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -138,11 +139,11 @@ function BulletList({
             <span style={body}>{item}</span>
           ) : (
             <>
-              <span
-                contentEditable suppressContentEditableWarning
-                onBlur={e => { const u = [...items]; u[i] = e.currentTarget.innerText; onChange(u) }}
+              <Editable
+                value={item}
+                onSave={v => { const u = [...items]; u[i] = v; onChange(u) }}
                 style={{ ...body, flex: 1 }}
-              >{item}</span>
+              />
               <button
                 className="no-print bg-ks-void text-white text-[11px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors flex-shrink-0"
                 onClick={() => onChange(items.filter((_, idx) => idx !== i))}
@@ -160,28 +161,6 @@ function BulletList({
         </li>
       )}
     </ul>
-  )
-}
-
-function CE({
-  value, onSave, style, block = false,
-}: {
-  value: string
-  onSave: (v: string) => void
-  style?: React.CSSProperties
-  block?: boolean
-}) {
-  if (block) {
-    return (
-      <p contentEditable suppressContentEditableWarning
-        onBlur={e => onSave(e.currentTarget.innerText)} style={style}
-      >{value}</p>
-    )
-  }
-  return (
-    <span contentEditable suppressContentEditableWarning
-      onBlur={e => onSave(e.currentTarget.innerText)} style={style}
-    >{value}</span>
   )
 }
 
@@ -346,7 +325,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
             {readonly ? (
               <p style={{ fontSize: '13px', color: '#3A3A3A' }}>{content.valid_until || '—'}</p>
             ) : (
-              <CE value={content.valid_until || 'e.g. 2026-06-30'} onSave={v => setField('valid_until', v)} style={{ fontSize: '13px', color: '#3A3A3A' }} />
+              <Editable value={content.valid_until || 'e.g. 2026-06-30'} onSave={v => setField('valid_until', v)} style={{ fontSize: '13px', color: '#3A3A3A' }} />
             )}
           </div>
           {content.founders_mode && (
@@ -366,7 +345,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               <strong style={{ color: '#0D0D0D' }}>{content.primary_goal}</strong>
             ) : (
               <strong style={{ color: '#0D0D0D' }}>
-                <CE value={content.primary_goal} onSave={v => setField('primary_goal', v)} style={{ color: '#0D0D0D', fontWeight: 700 }} />
+                <Editable value={content.primary_goal} onSave={v => setField('primary_goal', v)} style={{ color: '#0D0D0D', fontWeight: 700 }} />
               </strong>
             )}.
           </p>
@@ -409,13 +388,13 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               {readonly ? (
                 <strong>{content.revision_rounds} rounds</strong>
               ) : (
-                <strong><CE value={String(content.revision_rounds)} onSave={v => setField('revision_rounds', parseInt(v) || 2)} style={{ fontWeight: 700 }} /> rounds</strong>
+                <strong><Editable value={String(content.revision_rounds)} onSave={v => setField('revision_rounds', parseInt(v) || 2)} style={{ fontWeight: 700 }} /> rounds</strong>
               )}{' '}
               of design revisions. Additional revision rounds beyond this are billed at R
               {readonly ? (
                 <strong>{fmt(content.revision_rate)}</strong>
               ) : (
-                <strong><CE value={String(content.revision_rate)} onSave={v => setField('revision_rate', parseFloat(v.replace(/[^\d.]/g, '')) || 500)} style={{ fontWeight: 700 }} /></strong>
+                <strong><Editable value={String(content.revision_rate)} onSave={v => setField('revision_rate', parseFloat(v.replace(/[^\d.]/g, '')) || 500)} style={{ fontWeight: 700 }} /></strong>
               )}{' '}
               per hour (minimum 1 hour).
             </p>
@@ -455,13 +434,13 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               {content.timeline.map(row => (
                 <tr key={row.id}>
                   <td style={{ ...tdStyle, fontWeight: 500, color: '#0D0D0D' }}>
-                    {readonly ? row.phase : <CE value={row.phase} onSave={v => updateTimeline(row.id, 'phase', v)} style={{ fontWeight: 500, color: '#0D0D0D', fontSize: '12px' }} />}
+                    {readonly ? row.phase : <Editable value={row.phase} onSave={v => updateTimeline(row.id, 'phase', v)} style={{ fontWeight: 500, color: '#0D0D0D', fontSize: '12px' }} />}
                   </td>
                   <td style={{ ...tdStyle, color: '#9A9A9A' }}>
-                    {readonly ? row.duration : <CE value={row.duration} onSave={v => updateTimeline(row.id, 'duration', v)} style={{ color: '#9A9A9A', fontSize: '12px' }} />}
+                    {readonly ? row.duration : <Editable value={row.duration} onSave={v => updateTimeline(row.id, 'duration', v)} style={{ color: '#9A9A9A', fontSize: '12px' }} />}
                   </td>
                   <td style={tdStyle}>
-                    {readonly ? row.deliverable : <CE value={row.deliverable} onSave={v => updateTimeline(row.id, 'deliverable', v)} style={{ fontSize: '12px', color: '#3A3A3A' }} />}
+                    {readonly ? row.deliverable : <Editable value={row.deliverable} onSave={v => updateTimeline(row.id, 'deliverable', v)} style={{ fontSize: '12px', color: '#3A3A3A' }} />}
                   </td>
                   {!readonly && (
                     <td style={{ ...tdStyle, textAlign: 'right' }}>
@@ -479,7 +458,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
           )}
           <p style={{ ...body, color: '#9A9A9A', marginTop: '16px', fontStyle: 'italic' }}>
             <strong style={{ color: '#0D0D0D' }}>Total Timeline:</strong>{' '}
-            {readonly ? content.total_timeline : <CE value={content.total_timeline} onSave={v => setField('total_timeline', v)} style={{ fontStyle: 'italic', fontSize: '13px', color: '#9A9A9A' }} />}
+            {readonly ? content.total_timeline : <Editable value={content.total_timeline} onSave={v => setField('total_timeline', v)} style={{ fontStyle: 'italic', fontSize: '13px', color: '#9A9A9A' }} />}
           </p>
         </div>
 
@@ -512,12 +491,12 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               {content.line_items.map(item => (
                 <tr key={item.id}>
                   <td style={tdStyle}>
-                    {readonly ? item.title : <CE value={item.title} onSave={v => updateLineItem(item.id, 'title', v)} style={{ fontSize: '12px', color: '#3A3A3A' }} />}
+                    {readonly ? item.title : <Editable value={item.title} onSave={v => updateLineItem(item.id, 'title', v)} style={{ fontSize: '12px', color: '#3A3A3A' }} />}
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }}>
                       R{' '}
-                      {readonly ? fmt(item.amount) : <CE value={fmt(item.amount)} onSave={v => updateLineItem(item.id, 'amount', parseFloat(v.replace(/[^\d.]/g, '')) || 0)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }} />}
+                      {readonly ? fmt(item.amount) : <Editable value={fmt(item.amount)} onSave={v => updateLineItem(item.id, 'amount', parseFloat(v.replace(/[^\d.]/g, '')) || 0)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }} />}
                     </span>
                   </td>
                   {!readonly && (
@@ -574,10 +553,10 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
                 {content.client_costs.map(row => (
                   <tr key={row.id}>
                     <td style={{ ...tdStyle, fontWeight: 500, color: '#0D0D0D' }}>
-                      {readonly ? row.title : <CE value={row.title} onSave={v => updateClientCost(row.id, 'title', v)} style={{ fontWeight: 500, color: '#0D0D0D', fontSize: '12px' }} />}
+                      {readonly ? row.title : <Editable value={row.title} onSave={v => updateClientCost(row.id, 'title', v)} style={{ fontWeight: 500, color: '#0D0D0D', fontSize: '12px' }} />}
                     </td>
                     <td style={{ ...tdStyle, color: '#9A9A9A' }}>
-                      {readonly ? row.cost : <CE value={row.cost} onSave={v => updateClientCost(row.id, 'cost', v)} style={{ fontSize: '12px', color: '#9A9A9A' }} />}
+                      {readonly ? row.cost : <Editable value={row.cost} onSave={v => updateClientCost(row.id, 'cost', v)} style={{ fontSize: '12px', color: '#9A9A9A' }} />}
                     </td>
                     {!readonly && (
                       <td style={{ ...tdStyle, textAlign: 'right' }}>
@@ -611,7 +590,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               <div style={{ flex: 1, backgroundColor: '#F8F6F3', border: '0.5px solid #E8E5E0', padding: '20px' }}>
                 <p style={{ fontSize: '11px', color: '#9A9A9A', marginBottom: '6px' }}>
                   Deposit (
-                  {readonly ? `${content.deposit_percent}%` : <CE value={String(content.deposit_percent)} onSave={v => setField('deposit_percent', parseInt(v) || 50)} style={{ fontSize: '11px' }} />}
+                  {readonly ? `${content.deposit_percent}%` : <Editable value={String(content.deposit_percent)} onSave={v => setField('deposit_percent', parseInt(v) || 50)} style={{ fontSize: '11px' }} />}
                   % to commence)
                 </p>
                 <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '20px', color: '#0D0D0D' }}>R {fmt(depositAmount)}</p>
@@ -637,14 +616,14 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <p style={{ ...sectionH, marginBottom: '4px' }}>
                   <span style={{ color: '#F56E0F', marginRight: '8px' }}>{idx + 1}.</span>
-                  {readonly ? term.heading : <CE value={term.heading} onSave={v => updateTerm(term.id, 'heading', v)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }} />}
+                  {readonly ? term.heading : <Editable value={term.heading} onSave={v => updateTerm(term.id, 'heading', v)} style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }} />}
                 </p>
                 {!readonly && <button className="no-print ml-3 flex-shrink-0 bg-ks-void text-white text-[11px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors" onClick={() => setContent(c => ({ ...c, terms: c.terms.filter(t => t.id !== term.id) }))}>×</button>}
               </div>
               {readonly ? (
                 <p style={{ ...body, paddingLeft: '22px' }}>{term.body}</p>
               ) : (
-                <CE value={term.body} onSave={v => updateTerm(term.id, 'body', v)} style={{ ...body, paddingLeft: '22px', display: 'block' }} block />
+                <Editable tag="p" value={term.body} onSave={v => updateTerm(term.id, 'body', v)} style={{ ...body, paddingLeft: '22px', display: 'block' }} />
               )}
             </div>
           ))}
@@ -669,7 +648,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
                   <span style={body}>{step}</span>
                 ) : (
                   <>
-                    <span contentEditable suppressContentEditableWarning onBlur={e => { const u = [...content.next_steps]; u[i] = e.currentTarget.innerText; setField('next_steps', u) }} style={{ ...body, flex: 1 }}>{step}</span>
+                    <Editable value={step} onSave={v => { const u = [...content.next_steps]; u[i] = v; setField('next_steps', u) }} style={{ ...body, flex: 1 }} />
                     {!readonly && <button className="no-print bg-ks-void text-white text-[11px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors flex-shrink-0" onClick={() => setField('next_steps', content.next_steps.filter((_, idx) => idx !== i))}>×</button>}
                   </>
                 )}
@@ -687,7 +666,7 @@ export function ProposalDocument({ document, client, readonly = false }: Props) 
         <div style={{ borderTop: '0.5px solid #E8E5E0', paddingTop: '24px' }}>
           <p style={{ fontSize: '11px', color: '#9A9A9A', fontStyle: 'italic' }}>
             This proposal is valid for{' '}
-            {readonly ? content.validity_days : <CE value={String(content.validity_days)} onSave={v => setField('validity_days', parseInt(v) || 14)} style={{ fontSize: '11px', fontStyle: 'italic' }} />}
+            {readonly ? content.validity_days : <Editable value={String(content.validity_days)} onSave={v => setField('validity_days', parseInt(v) || 14)} style={{ fontSize: '11px', fontStyle: 'italic' }} />}
             {' '}days from the date listed above. After this period, pricing and availability may change.
           </p>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Client, KSDocument, OffboardingContent, OffboardingItem } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
+import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
@@ -105,12 +106,12 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
           {readonly ? (
             <p style={bodyText}>{content.project_summary}</p>
           ) : (
-            <p
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={e => setContent(c => ({ ...c, project_summary: e.currentTarget.innerText }))}
+            <Editable
+              tag="p"
+              value={content.project_summary}
+              onSave={v => setContent(c => ({ ...c, project_summary: v }))}
               style={bodyText}
-            >{content.project_summary}</p>
+            />
           )}
         </div>
 
@@ -134,24 +135,22 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
                     {readonly ? (
                       <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }}>{item.title}</span>
                     ) : (
-                      <span
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={e => updateDeliverable(item.id, 'title', e.currentTarget.innerText)}
+                      <Editable
+                        value={item.title}
+                        onSave={v => updateDeliverable(item.id, 'title', v)}
                         style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D', display: 'block' }}
-                      >{item.title}</span>
+                      />
                     )}
                   </td>
                   <td style={{ padding: '14px 0', borderBottom: '0.5px solid #E8E5E0', verticalAlign: 'top' }}>
                     {readonly ? (
                       <span style={bodyText}>{item.detail}</span>
                     ) : (
-                      <span
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={e => updateDeliverable(item.id, 'detail', e.currentTarget.innerText)}
+                      <Editable
+                        value={item.detail || 'Add details…'}
+                        onSave={v => updateDeliverable(item.id, 'detail', v === 'Add details…' ? '' : v)}
                         style={{ ...bodyText, display: 'block' }}
-                      >{item.detail || 'Add details…'}</span>
+                      />
                     )}
                   </td>
                   {!readonly && (
@@ -199,24 +198,22 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
                           {readonly ? (
                             <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D' }}>{cred.service}</span>
                           ) : (
-                            <span
-                              contentEditable
-                              suppressContentEditableWarning
-                              onBlur={e => setContent(c => ({ ...c, credentials: c.credentials.map(x => x.id === cred.id ? { ...x, service: e.currentTarget.innerText } : x) }))}
+                            <Editable
+                              value={cred.service}
+                              onSave={v => setContent(c => ({ ...c, credentials: c.credentials.map(x => x.id === cred.id ? { ...x, service: v } : x) }))}
                               style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0D0D0D', display: 'block' }}
-                            >{cred.service}</span>
+                            />
                           )}
                         </td>
                         <td style={{ padding: '14px 0', borderBottom: '0.5px solid #E8E5E0', verticalAlign: 'top' }}>
                           {readonly ? (
                             <span style={bodyText}>{cred.note}</span>
                           ) : (
-                            <span
-                              contentEditable
-                              suppressContentEditableWarning
-                              onBlur={e => setContent(c => ({ ...c, credentials: c.credentials.map(x => x.id === cred.id ? { ...x, note: e.currentTarget.innerText } : x) }))}
+                            <Editable
+                              value={cred.note || 'Login details / notes…'}
+                              onSave={v => setContent(c => ({ ...c, credentials: c.credentials.map(x => x.id === cred.id ? { ...x, note: v === 'Login details / notes…' ? '' : v } : x) }))}
                               style={{ ...bodyText, display: 'block' }}
-                            >{cred.note || 'Login details / notes…'}</span>
+                            />
                           )}
                         </td>
                         {!readonly && (
@@ -251,12 +248,12 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
             {readonly ? (
               <p style={bodyText}>{content.handover_notes}</p>
             ) : (
-              <p
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={e => setContent(c => ({ ...c, handover_notes: e.currentTarget.innerText }))}
+              <Editable
+                tag="p"
+                value={content.handover_notes || 'Add any specific handover instructions, CMS notes, or important context here…'}
+                onSave={v => setContent(c => ({ ...c, handover_notes: v === 'Add any specific handover instructions, CMS notes, or important context here…' ? '' : v }))}
                 style={{ ...bodyText, minHeight: '60px', padding: '10px', backgroundColor: '#FAFAF9', border: '0.5px solid #E8E5E0' }}
-              >{content.handover_notes || 'Add any specific handover instructions, CMS notes, or important context here…'}</p>
+              />
             )}
           </div>
         )}
@@ -277,12 +274,11 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
                     <span style={bodyText}>{step}</span>
                   ) : (
                     <>
-                      <span
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={e => setContent(c => ({ ...c, next_steps: c.next_steps.map((s, idx) => idx === i ? e.currentTarget.innerText : s) }))}
+                      <Editable
+                        value={step}
+                        onSave={v => setContent(c => ({ ...c, next_steps: c.next_steps.map((s, idx) => idx === i ? v : s) }))}
                         style={{ ...bodyText, flex: 1 }}
-                      >{step}</span>
+                      />
                       <button
                         className="no-print bg-ks-void text-white text-[11px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors flex-shrink-0 mt-0.5"
                         onClick={() => setContent(c => ({ ...c, next_steps: c.next_steps.filter((_, idx) => idx !== i) }))}
@@ -309,12 +305,12 @@ export function OffboardingDocument({ document, client, readonly = false }: Prop
           {readonly ? (
             <p style={bodyText}>{content.support_terms}</p>
           ) : (
-            <p
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={e => setContent(c => ({ ...c, support_terms: e.currentTarget.innerText }))}
+            <Editable
+              tag="p"
+              value={content.support_terms}
+              onSave={v => setContent(c => ({ ...c, support_terms: v }))}
               style={bodyText}
-            >{content.support_terms}</p>
+            />
           )}
         </div>
 
