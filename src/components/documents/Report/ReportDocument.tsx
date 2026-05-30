@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type {
-  Client, KSDocument, ReportContent, ReportSection,
+  Client, KSDocument, ReportContent, ReportGalleryColumn, ReportSection,
   ReportSectionType, ReportStat, ReportBar,
 } from '../../../types'
 import { DocumentShell } from '../DocumentShell'
@@ -8,6 +8,7 @@ import { Editable } from '../Editable'
 import { Button } from '../../ui'
 import { updateDocumentContent } from '../../../hooks/useDocument'
 import { exportToPDF } from '../../../lib/pdf'
+import { uploadReportImage } from '../../../lib/documents/uploadReportImage'
 
 interface Props {
   document: KSDocument
@@ -16,13 +17,14 @@ interface Props {
 }
 
 const SECTION_TYPES: { type: ReportSectionType; label: string }[] = [
-  { type: 'text',       label: 'Text' },
-  { type: 'callout',    label: 'Callout' },
-  { type: 'grid',       label: 'Grid' },
-  { type: 'table',      label: 'Table' },
-  { type: 'stat_tiles', label: 'Stat Tiles' },
-  { type: 'bar_chart',  label: 'Bar Chart' },
-  { type: 'image',      label: 'Image' },
+  { type: 'text',          label: 'Text' },
+  { type: 'callout',       label: 'Callout' },
+  { type: 'grid',          label: 'Grid' },
+  { type: 'table',         label: 'Table' },
+  { type: 'stat_tiles',    label: 'Stat Tiles' },
+  { type: 'bar_chart',     label: 'Bar Chart' },
+  { type: 'image',         label: 'Image' },
+  { type: 'image_gallery', label: 'Gallery' },
 ]
 
 function newSectionData(type: ReportSectionType): Partial<ReportSection> {
@@ -49,6 +51,12 @@ function newSectionData(type: ReportSectionType): Partial<ReportSection> {
       ],
     }
     case 'image': return { image_url: '', image_caption: '' }
+    case 'image_gallery': return {
+      gallery: [
+        { id: crypto.randomUUID(), label: 'Column 1', images: [] },
+        { id: crypto.randomUUID(), label: 'Column 2', images: [] },
+      ],
+    }
     default:      return {}
   }
 }
@@ -62,6 +70,24 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const isMounted = useRef(false)
+  const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
+  const [pendingUrls, setPendingUrls] = useState<Record<string, string>>({})
+
+  function setUploading(id: string, on: boolean) {
+    setUploadingIds(prev => { const next = new Set(prev); on ? next.add(id) : next.delete(id); return next })
+  }
+
+  async function uploadImage(file: File, slotId: string, onUrl: (url: string) => void) {
+    setUploading(slotId, true)
+    try {
+      const url = await uploadReportImage(file, document.id)
+      onUrl(url)
+    } catch (err) {
+      console.error('Image upload failed:', err)
+    } finally {
+      setUploading(slotId, false)
+    }
+  }
 
   async function save() {
     setSaving(true)
@@ -203,6 +229,40 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
   }
   function updateBar(sectionId: string, barId: string, field: keyof ReportBar, value: string | number) {
     setSection(sectionId, s => ({ ...s, bars: s.bars?.map(b => b.id === barId ? { ...b, [field]: value } : b) }))
+  }
+
+  // ── Image Gallery ─────────────────────────────────────────────────────────
+
+  function addGalleryColumn(sectionId: string) {
+    const newCol: ReportGalleryColumn = { id: crypto.randomUUID(), label: `Column ${(content.sections.find(s => s.id === sectionId)?.gallery?.length ?? 0) + 1}`, images: [] }
+    setSection(sectionId, s => ({ ...s, gallery: [...(s.gallery ?? []), newCol] }))
+  }
+  function removeGalleryColumn(sectionId: string, colId: string) {
+    setSection(sectionId, s => ({ ...s, gallery: s.gallery?.filter(c => c.id !== colId) }))
+  }
+  function addGalleryImage(sectionId: string, colId: string, url: string) {
+    if (!url.trim()) return
+    setSection(sectionId, s => ({
+      ...s,
+      gallery: s.gallery?.map(c => c.id !== colId ? c : {
+        ...c, images: [...c.images, { id: crypto.randomUUID(), url: url.trim() }],
+      }),
+    }))
+    setPendingUrls(p => ({ ...p, [colId]: '' }))
+  }
+  function removeGalleryImage(sectionId: string, colId: string, imgId: string) {
+    setSection(sectionId, s => ({
+      ...s,
+      gallery: s.gallery?.map(c => c.id !== colId ? c : { ...c, images: c.images.filter(i => i.id !== imgId) }),
+    }))
+  }
+  function updateGalleryImageCaption(sectionId: string, colId: string, imgId: string, caption: string) {
+    setSection(sectionId, s => ({
+      ...s,
+      gallery: s.gallery?.map(c => c.id !== colId ? c : {
+        ...c, images: c.images.map(i => i.id !== imgId ? i : { ...i, caption }),
+      }),
+    }))
   }
 
   return (
@@ -478,14 +538,18 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
               {section.type === 'image' && (
                 <div>
                   {!readonly && (
-                    <div className="no-print mb-3">
+                    <div className="no-print mb-3 flex gap-2">
                       <input
                         type="url"
                         placeholder="Paste image URL…"
                         value={section.image_url ?? ''}
                         onChange={e => setSection(section.id, s => ({ ...s, image_url: e.target.value }))}
-                        className="w-full border border-ks-rule bg-white font-body text-[12px] text-ks-ink placeholder:text-ks-silver px-3 py-2 rounded-ks focus:outline-none focus:border-ks-lava transition-colors"
+                        className="flex-1 border border-ks-rule bg-white font-body text-[12px] text-ks-ink placeholder:text-ks-silver px-3 py-2 rounded-ks focus:outline-none focus:border-ks-lava transition-colors"
                       />
+                      <label className={`no-print flex items-center gap-1.5 font-body font-medium text-[9px] uppercase tracking-[0.1em] px-3 py-2 rounded-ks border cursor-pointer transition-colors ${uploadingIds.has(section.id) ? 'border-ks-rule text-ks-silver opacity-50' : 'border-ks-lava text-ks-lava hover:bg-ks-lava hover:text-white'}`}>
+                        {uploadingIds.has(section.id) ? '↑ Uploading…' : '↑ Upload'}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploadingIds.has(section.id)} onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(f, section.id, url => setSection(section.id, s => ({ ...s, image_url: url }))) }} />
+                      </label>
                     </div>
                   )}
                   {section.image_url ? (
@@ -506,10 +570,93 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
                   ) : (
                     !readonly && (
                       <div style={{ border: '2px dashed #D4D0CA', padding: '48px 24px', textAlign: 'center' }}>
-                        <p style={{ fontSize: '11px', color: '#9A9A9A' }}>Paste an image URL above to embed a screenshot or chart.</p>
+                        <p style={{ fontSize: '11px', color: '#9A9A9A' }}>Paste a URL or upload a file above.</p>
                       </div>
                     )
                   )}
+                </div>
+              )}
+
+              {/* ── Image Gallery ─────────────────────────────────────── */}
+              {section.type === 'image_gallery' && (
+                <div>
+                  {!readonly && (
+                    <div className="no-print flex justify-end mb-3">
+                      <button className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-silver border border-ks-rule px-3 py-1.5 rounded-ks hover:border-ks-ink hover:text-ks-ink transition-colors" onClick={() => addGalleryColumn(section.id)}>+ Add Column</button>
+                    </div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${section.gallery?.length ?? 1}, 1fr)`, gap: '24px', alignItems: 'start' }}>
+                    {(section.gallery ?? []).map(col => (
+                      <div key={col.id} style={{ position: 'relative' }}>
+                        {/* Column label */}
+                        <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '0.5px solid #E8E5E0' }}>
+                          {readonly ? (
+                            col.label && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#9A9A9A' }}>{col.label}</p>
+                          ) : (
+                            <Editable value={col.label ?? ''} onSave={v => setSection(section.id, s => ({ ...s, gallery: s.gallery?.map(c => c.id !== col.id ? c : { ...c, label: v }) }))} style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#9A9A9A', display: 'block' }} />
+                          )}
+                        </div>
+
+                        {/* Images */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {col.images.map(img => (
+                            <div key={img.id} style={{ position: 'relative' }}>
+                              <img src={img.url} alt={img.caption ?? ''} style={{ width: '100%', display: 'block', border: '0.5px solid #E8E5E0' }} />
+                              {readonly ? (
+                                img.caption && <p style={{ fontSize: '10px', color: '#9A9A9A', fontStyle: 'italic', marginTop: '4px', fontFamily: 'Inter, sans-serif' }}>{img.caption}</p>
+                              ) : (
+                                <Editable value={img.caption || 'Add caption…'} onSave={v => updateGalleryImageCaption(section.id, col.id, img.id, v === 'Add caption…' ? '' : v)} style={{ fontSize: '10px', color: '#9A9A9A', fontStyle: 'italic', marginTop: '4px', fontFamily: 'Inter, sans-serif', display: 'block' }} />
+                              )}
+                              {!readonly && (
+                                <button className="no-print absolute top-1 right-1 bg-ks-void text-white text-[10px] w-5 h-5 rounded-ks hover:bg-red-500 transition-colors" onClick={() => removeGalleryImage(section.id, col.id, img.id)}>×</button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Add image controls */}
+                        {!readonly && (
+                          <div className="no-print mt-3 flex gap-1.5">
+                            <input
+                              type="url"
+                              placeholder="Paste URL…"
+                              value={pendingUrls[col.id] ?? ''}
+                              onChange={e => setPendingUrls(p => ({ ...p, [col.id]: e.target.value }))}
+                              onKeyDown={e => { if (e.key === 'Enter') { addGalleryImage(section.id, col.id, pendingUrls[col.id] ?? '') } }}
+                              className="flex-1 min-w-0 border border-ks-rule bg-white font-body text-[11px] text-ks-ink placeholder:text-ks-silver px-2 py-1.5 rounded-ks focus:outline-none focus:border-ks-lava transition-colors"
+                            />
+                            <button
+                              className="font-body font-medium text-[9px] uppercase tracking-[0.1em] text-ks-lava border border-ks-lava px-2 py-1.5 rounded-ks hover:bg-ks-lava hover:text-white transition-colors flex-shrink-0"
+                              onClick={() => addGalleryImage(section.id, col.id, pendingUrls[col.id] ?? '')}
+                            >Add</button>
+                            <label className={`flex items-center font-body font-medium text-[9px] uppercase tracking-[0.1em] px-2 py-1.5 rounded-ks border cursor-pointer transition-colors flex-shrink-0 ${uploadingIds.has(col.id) ? 'border-ks-rule text-ks-silver opacity-50' : 'border-ks-rule text-ks-silver hover:border-ks-ink hover:text-ks-ink'}`}>
+                              {uploadingIds.has(col.id) ? '↑…' : '↑ Upload'}
+                              <input type="file" accept="image/*" multiple className="hidden" disabled={uploadingIds.has(col.id)} onChange={async e => {
+                                const files = Array.from(e.target.files ?? [])
+                                if (!files.length) return
+                                setUploading(col.id, true)
+                                try {
+                                  for (const file of files) {
+                                    const url = await uploadReportImage(file, document.id)
+                                    addGalleryImage(section.id, col.id, url)
+                                  }
+                                } catch (err) {
+                                  console.error('Gallery upload failed:', err)
+                                } finally {
+                                  setUploading(col.id, false)
+                                }
+                              }} />
+                            </label>
+                          </div>
+                        )}
+
+                        {/* Remove column */}
+                        {!readonly && (section.gallery?.length ?? 0) > 1 && (
+                          <button className="no-print mt-2 font-body text-[9px] uppercase tracking-[0.08em] text-ks-silver hover:text-red-500 transition-colors" onClick={() => removeGalleryColumn(section.id, col.id)}>Remove column</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

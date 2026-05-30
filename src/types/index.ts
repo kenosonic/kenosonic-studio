@@ -129,7 +129,19 @@ export interface ContractContent {
   terms: string
 }
 
-export type ReportSectionType = 'text' | 'grid' | 'callout' | 'table' | 'stat_tiles' | 'bar_chart' | 'image'
+export type ReportSectionType = 'text' | 'grid' | 'callout' | 'table' | 'stat_tiles' | 'bar_chart' | 'image' | 'image_gallery'
+
+export interface ReportGalleryImage {
+  id: string
+  url: string
+  caption?: string
+}
+
+export interface ReportGalleryColumn {
+  id: string
+  label?: string
+  images: ReportGalleryImage[]
+}
 
 export interface ReportStat {
   id: string
@@ -170,6 +182,8 @@ export interface ReportSection {
   // image
   image_url?: string
   image_caption?: string
+  // image_gallery
+  gallery?: ReportGalleryColumn[]
 }
 
 export interface ReportContent {
