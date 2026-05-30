@@ -8,22 +8,30 @@ interface EditableProps {
   tag?: EditableTag
   style?: React.CSSProperties
   className?: string
+  html?: boolean
 }
 
 /**
  * contentEditable wrapper that bypasses React's reconciler for DOM content.
  * React never manages children of this element — useLayoutEffect sets textContent
  * directly, and skips the update while the user has focus to protect in-progress edits.
+ *
+ * Pass html={true} to preserve rich formatting (bold, italic, line breaks).
+ * In that mode, innerHTML is used for both reading and writing.
  */
-export function Editable({ value, onSave, tag = 'span', style, className }: EditableProps) {
+export function Editable({ value, onSave, tag = 'span', style, className, html = false }: EditableProps) {
   const ref = useRef<HTMLElement>(null)
   const editingRef = useRef(false)
 
   useLayoutEffect(() => {
     if (ref.current && !editingRef.current) {
-      ref.current.textContent = value
+      if (html) {
+        ref.current.innerHTML = value
+      } else {
+        ref.current.textContent = value
+      }
     }
-  }, [value])
+  }, [value, html])
 
   const sharedProps = {
     contentEditable: true as const,
@@ -31,7 +39,7 @@ export function Editable({ value, onSave, tag = 'span', style, className }: Edit
     onFocus: () => { editingRef.current = true },
     onBlur: (e: React.FocusEvent<HTMLElement>) => {
       editingRef.current = false
-      onSave(e.currentTarget.innerText)
+      onSave(html ? e.currentTarget.innerHTML : e.currentTarget.innerText)
     },
     style,
     className,

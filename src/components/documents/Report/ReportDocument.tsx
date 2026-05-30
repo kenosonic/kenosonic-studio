@@ -288,16 +288,16 @@ export function ReportDocument({ document, client, readonly = false }: Props) {
               {/* ── Text ─────────────────────────────────────────────── */}
               {section.type === 'text' && (
                 readonly
-                  ? <p style={{ fontSize: '14px', color: '#0D0D0D' }}>{section.body}</p>
-                  : <Editable tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', color: '#0D0D0D' }} />
+                  ? <p style={{ fontSize: '14px', color: '#0D0D0D' }} dangerouslySetInnerHTML={{ __html: section.body ?? '' }} />
+                  : <Editable html tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', color: '#0D0D0D' }} />
               )}
 
               {/* ── Callout ──────────────────────────────────────────── */}
               {section.type === 'callout' && (
                 <div style={{ padding: '32px', border: '0.5px solid #D4D0CA', backgroundColor: '#F0EDE8' }}>
                   {readonly
-                    ? <p style={{ fontSize: '14px', lineHeight: 1.6 }}>{section.body}</p>
-                    : <Editable tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', lineHeight: 1.6 }} />
+                    ? <p style={{ fontSize: '14px', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: section.body ?? '' }} />
+                    : <Editable html tag="p" value={section.body ?? ''} onSave={v => setSection(section.id, s => ({ ...s, body: v }))} style={{ fontSize: '14px', lineHeight: 1.6 }} />
                   }
                 </div>
               )}
