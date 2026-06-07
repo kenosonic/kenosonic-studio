@@ -36,7 +36,7 @@ function CoverPage({ document: doc, client, version, date }: {
         boxSizing: 'border-box',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '48px 56px 0' }}>
+      <div className="spec-cover-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '48px 56px 0' }}>
         <img src="/logo.svg" alt="Kenosonic" style={{ height: '28px', filter: 'brightness(0) invert(1)' }} />
         <div style={{ textAlign: 'right' }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#F56E0F', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '4px' }}>Spec Document</p>
@@ -44,14 +44,14 @@ function CoverPage({ document: doc, client, version, date }: {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 56px' }}>
+      <div className="spec-cover-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 56px' }}>
         <div style={{ borderLeft: '3px solid #F56E0F', paddingLeft: '24px', marginBottom: '40px' }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '20px' }}>Technical Specification</p>
-          <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '40px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.15, margin: 0 }}>
+          <h1 className="spec-cover-title" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '40px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.15, margin: 0 }}>
             {doc.title}
           </h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div className="spec-cover-meta" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '6px' }}>Prepared For</p>
             <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '15px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{client.company_name}</p>
@@ -64,7 +64,7 @@ function CoverPage({ document: doc, client, version, date }: {
         </div>
       </div>
 
-      <div style={{ borderTop: '0.5px solid #1E1E1E', padding: '20px 56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="spec-cover-footer" style={{ borderTop: '0.5px solid #1E1E1E', padding: '20px 56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', lineHeight: 1.6, margin: 0 }}>hello@kenosonic.co.za · kenosonic.co.za</p>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', color: '#5A5A5A', margin: 0 }}>v{version} · {date}</p>
       </div>
