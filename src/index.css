@@ -98,46 +98,8 @@
 
 /* Spec document — mobile responsive overrides */
 @media screen and (max-width: 639px) {
-  [data-spec-page="cover"],
-  [data-spec-page="back"] {
-    min-height: auto !important;
-  }
-
-  .spec-cover-header {
-    padding: 28px 20px 0 !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-  }
-
-  .spec-cover-body {
-    padding: 32px 20px !important;
-  }
-
-  .spec-cover-title {
-    font-size: 26px !important;
-  }
-
-  .spec-cover-meta {
-    flex-wrap: wrap !important;
-    gap: 16px !important;
-  }
-
-  .spec-cover-meta > div:nth-child(2) {
-    display: none !important;
-  }
-
-  .spec-cover-footer {
-    padding: 16px 20px !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
-
   [data-spec-page="content"] {
     padding: 28px 20px 36px !important;
-  }
-
-  [data-spec-page="back"] {
-    padding: 48px 24px !important;
   }
 
   .spec-markdown table {
